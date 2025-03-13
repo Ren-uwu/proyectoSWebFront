@@ -2,7 +2,7 @@ using System.Net.Http.Json;     // Importar esta librería para usar métodos qu
 using System.Text;              // Necesario para trabajar con codificación de texto (UTF-8 para JSON)
 using System.Text.Json;         // Proporcionar funcionalidad para serializar y deserializar JSON
 
-namespace FrontBlazor.Services  // Definir el espacio de nombres donde se ubicará esta clase
+namespace ProyectoSWebfront.Services  // Definir el espacio de nombres donde se ubicará esta clase
 {
     /// <summary>
     /// Servicio genérico para realizar operaciones CRUD con cualquier entidad a través de la API genérica.

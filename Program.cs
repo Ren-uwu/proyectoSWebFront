@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Components.Web;       // Contiene componentes web y características fundamentales para aplicaciones Blazor
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;  // Proporciona la infraestructura para hospedar aplicaciones Blazor WebAssembly en el navegador
 using ProyectoSWebfront;                              // El espacio de nombres raíz de nuestro proyecto
-using FrontBlazor.Services;                     // Contiene los servicios personalizados para comunicación con la API
+using ProyectoSWebfront.Services;                     // Contiene los servicios personalizados para comunicación con la API
 
 // Crea un constructor de host WebAssembly con configuración predeterminada
 // Este objeto se utiliza para configurar los servicios y componentes de la aplicación
