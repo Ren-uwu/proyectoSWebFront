@@ -51,10 +51,10 @@ else
                         <td>@ObtenerValor(producto, "codigo")</td>  <!-- Celda que muestra el código usando el método auxiliar -->
                         <td>@ObtenerValor(producto, "nombre")</td>  <!-- Celda que muestra el nombre usando el método auxiliar -->
                         <td>@ObtenerValor(producto, "stock")</td>  <!-- Celda que muestra el stock usando el método auxiliar -->
-                        <td>@FormatearPrecio(ObtenerValor(producto, "valorunitario"))</td>  <!-- Celda que muestra el precio formateado -->
-                        <!--<div class="mb-3">-->  <!-- Contenedor con margen inferior (mb-3 es una clase de Bootstrap) -->
-                            <button class="btn btn-primary" disabled>Crear Nuevo (Próximamente)</button>  <!-- Botón deshabilitado para crear nuevos productos -->
-                        <!--</div> -->
+                        <td>@FormatearPrecio(ObtenerValor(producto, "valorunitario"))</td> 
+                        <td><!-- Celda que muestra el precio formateado  Contenedor con margen inferior (mb-3 es una clase de Bootstrap) -->
+                            <button class="btn btn-danger" @onclick="() =>EliminarProducto(producto)">Eliminar</button>  <!-- Botón deshabilitado para crear nuevos productos -->
+                        </td> 
                     </tr>
                 }
             </tbody>
@@ -63,10 +63,10 @@ else
 }
 
 <!-- Mostrar mensaje de error si existe -->
-@if (errorMensaje != null)
+@if (Mensaje != null)
 {
     <div class="alert alert-danger">
-        Error: @errorMensaje
+        Error: @Mensaje
     </div>
 }
 
@@ -78,7 +78,7 @@ else
     private bool cargando = true;
     
     // Variable para almacenar mensajes de error
-    private string? errorMensaje = null;
+    private string? Mensaje = null;
     
     // Constantes para los parámetros de la API
     private const string PROYECTO = "proyecto";
@@ -97,7 +97,7 @@ else
         // Establecer la bandera de carga en verdadero
         cargando = true;
         // Limpiar cualquier mensaje de error previo
-        errorMensaje = null;
+        Mensaje = null;
         
         try
         {
@@ -118,7 +118,7 @@ else
         catch (Exception ex)
         {
             // En caso de error, guardar el mensaje y crear lista vacía
-            errorMensaje = $"Error al cargar productos: {ex.Message}";
+            Mensaje = $"Error al cargar productos: {ex.Message}";
             productos = new List<Dictionary<string, object>>();
         }
         finally
@@ -162,5 +162,29 @@ else
         
         // Si no se puede convertir, devolver el valor original
         return valor;
+    }
+    private async Task EliminarProducto(Dictionary<string, object> Entidad)
+    {
+        // Establecer la bandera de carga en verdadero
+        cargando = true;
+        // Limpiar cualquier mensaje de error previo
+        Mensaje = null;
+        
+        try
+        {
+            var resultado = await servicioEntidad.EliminarAsync(PROYECTO, TABLA, "codigo", ObtenerValor(Entidad,"codigo"));
+            Mensaje = "Producto eliminado";
+            await CargarProductos();
+        }
+        catch (Exception ex)
+        {
+            // En caso de error, guardar el mensaje y crear lista vacía
+            Mensaje = $"Error al eliminar producto: {ex.Message}";
+        }
+        finally
+        {
+            // Establecer la bandera de carga en falso una vez finalizada la operación
+            cargando = false;
+        }
     }
 }
