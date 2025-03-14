@@ -6,9 +6,9 @@
 @inject NavigationManager navegacionManager
 @inject IJSRuntime JS
 
-<PageTitle>Lista de secciones</PageTitle>
+<PageTitle>Lista de subsecciones</PageTitle>
 
-<h1>Secciones</h1>
+<h1>Subsecciones</h1>
 
 <div class="mb-3">
     <button class="btn btn-primary" @onclick="MostrarFormularioCrear">Crear Nuevo</button>
@@ -17,12 +17,12 @@
 @if (mostrarFormularioCrear)
 {
     <div class="card p-3 mb-3">
-        <h5>Nueva Seccion</h5>
+        <h5>Nueva Subseccion</h5>
         <label>Id:</label>
-        <input @bind="idNuevaSeccion" class="form-control" placeholder="Ingrese el id de la seccion" />
+        <input @bind="idNuevaSubseccion" class="form-control" placeholder="Ingrese el id de la subseccion" />
         <label>Nombre:</label>
-        <input @bind="nombreNuevaSeccion" class="form-control" placeholder="Ingrese el nombre de la seccion" />
-        <button class="btn btn-success mt-2" @onclick="CrearNuevaSeccion">Guardar</button>
+        <input @bind="nombreNuevaSubseccion" class="form-control" placeholder="Ingrese el nombre de la subseccion" />
+        <button class="btn btn-success mt-2" @onclick="CrearNuevaSubseccion">Guardar</button>
         <button class="btn btn-secondary mt-2" @onclick="CancelarFormulario">Cancelar</button>
     </div>
 }
@@ -30,12 +30,12 @@
 @if (mostrarFormularioEditar)
 {
     <div class="card p-3 mb-3">
-        <h5>Editar Seccion</h5>
+        <h5>Editar Subseccion</h5>
         <label>Nuevo id:</label>
         <input @bind="idEditado" class="form-control" placeholder="Ingrese el nuevo id" />
         <label>Nuevo Nombre:</label>
         <input @bind="nombreEditado" class="form-control" placeholder="Ingrese el nuevo nombre" />
-        <button class="btn btn-warning mt-2" @onclick="ActualizarSeccion">Actualizar</button>
+        <button class="btn btn-warning mt-2" @onclick="ActualizarSubseccion">Actualizar</button>
         <button class="btn btn-secondary mt-2" @onclick="CancelarFormulario">Cancelar</button>
     </div>
 }
@@ -71,7 +71,7 @@ else
                         </td>
                         <td>
                             <button class="btn btn-warning btn-sm" @onclick="() => MostrarFormularioEditar(producto)">Editar</button>
-                            <button class="btn btn-danger btn-sm" @onclick="() => EliminarSeccion(producto)">Eliminar</button>
+                            <button class="btn btn-danger btn-sm" @onclick="() => EliminarSubseccion(producto)">Eliminar</button>
                         </td>
                     </tr>
                 }
@@ -96,13 +96,13 @@ else
 
     private const string PROYECTO = "Trabajo";
 
-    private const string TABLA = "seccion";
+    private const string TABLA = "subseccion";
 
     private bool mostrarFormularioCrear = false;
 
-    private string nombreNuevaSeccion = "";
+    private string nombreNuevaSubseccion = "";
 
-    private string idNuevaSeccion = "";
+    private string idNuevaSubseccion = "";
 
     private bool mostrarFormularioEditar = false;
 
@@ -139,18 +139,18 @@ else
         }
     }
 
-    private async Task CrearNuevaSeccion()
+    private async Task CrearNuevaSubseccion()
     {
         var nuevaEntidad = new Dictionary<string, object>
         {
-            {"id", idNuevaSeccion },
-            { "nombre", nombreNuevaSeccion }
+            {"id", idNuevaSubseccion },
+            { "nombre", nombreNuevaSubseccion }
         };
         bool creado = await servicioEntidad.CrearAsync(PROYECTO, TABLA, nuevaEntidad);
         if (creado)
         {
-            idNuevaSeccion = "";
-            nombreNuevaSeccion = "";
+            idNuevaSubseccion = "";
+            nombreNuevaSubseccion = "";
             mostrarFormularioCrear = false;
             await CargarProductos();
         }
@@ -176,7 +176,7 @@ else
         mostrarFormularioCrear = false;
     }
 
-    private async Task ActualizarSeccion()
+    private async Task ActualizarSubseccion()
     {
         bool nombreflag = false;
         bool idflag = false;
@@ -215,11 +215,11 @@ else
         }
         else
         {
-            errorMensaje = "Error al actualizar la seccion.";
+            errorMensaje = "Error al actualizar la subseccion.";
         }
     }
 
-    private async Task EliminarSeccion(Dictionary<string, object> producto)
+    private async Task EliminarSubseccion(Dictionary<string, object> producto)
     {
         string claveEliminar = ObtenerValor(producto, "nombre");
         if (!await ConfirmarEliminacion(claveEliminar))
@@ -233,7 +233,7 @@ else
         }
         else
         {
-            errorMensaje = "Error al eliminar la seccion.";
+            errorMensaje = "Error al eliminar la subseccion.";
         }
     }
 
@@ -246,8 +246,8 @@ else
     {
         mostrarFormularioCrear = false;
         mostrarFormularioEditar = false;
-        nombreNuevaSeccion = "";
-        idNuevaSeccion = "";
+        nombreNuevaSubseccion = "";
+        idNuevaSubseccion = "";
         nombreEditado = "";
         idEditado = "";
     }
@@ -258,3 +258,4 @@ else
         return diccionario.TryGetValue(clave, out var valor) ? valor?.ToString() ?? string.Empty : string.Empty;
     }
 }
+
