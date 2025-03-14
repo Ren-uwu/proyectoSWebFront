@@ -1,0 +1,260 @@
+﻿@page "/seccion"
+@using System.Collections.Generic
+@using System.Text.Json
+@using Services
+@inject ServicioEntidad servicioEntidad
+@inject NavigationManager navegacionManager
+@inject IJSRuntime JS
+
+<PageTitle>Lista de secciones</PageTitle>
+
+<h1>Secciones</h1>
+
+<div class="mb-3">
+    <button class="btn btn-primary" @onclick="MostrarFormularioCrear">Crear Nuevo</button>
+</div>
+
+@if (mostrarFormularioCrear)
+{
+    <div class="card p-3 mb-3">
+        <h5>Nueva Seccion</h5>
+        <label>Id:</label>
+        <input @bind="idNuevaSeccion" class="form-control" placeholder="Ingrese el id de la seccion" />
+        <label>Nombre:</label>
+        <input @bind="nombreNuevaSeccion" class="form-control" placeholder="Ingrese el nombre de la seccion" />
+        <button class="btn btn-success mt-2" @onclick="CrearNuevaSeccion">Guardar</button>
+        <button class="btn btn-secondary mt-2" @onclick="CancelarFormulario">Cancelar</button>
+    </div>
+}
+
+@if (mostrarFormularioEditar)
+{
+    <div class="card p-3 mb-3">
+        <h5>Editar Sentido</h5>
+        <label>Nuevo id:</label>
+        <input @bind="idEditado" class="form-control" placeholder="Ingrese el nuevo id" />
+        <label>Nuevo Nombre:</label>
+        <input @bind="nombreEditado" class="form-control" placeholder="Ingrese el nuevo nombre" />
+        <button class="btn btn-warning mt-2" @onclick="ActualizarSeccion">Actualizar</button>
+        <button class="btn btn-secondary mt-2" @onclick="CancelarFormulario">Cancelar</button>
+    </div>
+}
+
+@if (cargando)
+{
+    <p><em>Cargando...</em></p>
+}
+else if (productos == null || productos.Count == 0)
+{
+    <p>No hay datos disponibles.</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Nombre</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var producto in productos)
+                {
+                    <tr>
+                        <td>@ObtenerValor(producto, "id")</td>
+                        <td>
+                            @(ObtenerValor(producto, "nombre").ToString().Length > 90
+                                ? ObtenerValor(producto, "nombre").ToString().Substring(0, 90) + "..."
+                                : ObtenerValor(producto, "nombre"))
+                        </td>
+                        <td>
+                            <button class="btn btn-warning btn-sm" @onclick="() => MostrarFormularioEditar(producto)">Editar</button>
+                            <button class="btn btn-danger btn-sm" @onclick="() => EliminarSeccion(producto)">Eliminar</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@if (errorMensaje != null)
+{
+    <div class="alert alert-danger">
+        Error: @errorMensaje
+    </div>
+}
+
+@code {
+    private List<Dictionary<string, object>> productos = new List<Dictionary<string, object>>();
+
+    private bool cargando = true;
+
+    private string? errorMensaje = null;
+
+    private const string PROYECTO = "Trabajo";
+
+    private const string TABLA = "seccion";
+
+    private bool mostrarFormularioCrear = false;
+
+    private string nombreNuevaSeccion = "";
+
+    private string idNuevaSeccion = "";
+
+    private bool mostrarFormularioEditar = false;
+
+    private string nombreEditado = "";
+
+    private string idEditado = "";
+
+    private string claveEditando = "";
+
+    private string idEditando = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarProductos();
+    }
+
+    private async Task CargarProductos()
+    {
+        cargando = true;
+        errorMensaje = null;
+        try
+        {
+            var resultado = await servicioEntidad.ObtenerTodosAsync(PROYECTO, TABLA);
+            productos = resultado ?? new List<Dictionary<string, object>>();
+        }
+        catch (Exception ex)
+        {
+            errorMensaje = $"Error al cargar productos: {ex.Message}";
+            productos = new List<Dictionary<string, object>>();
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private async Task CrearNuevaSeccion()
+    {
+        var nuevaEntidad = new Dictionary<string, object>
+        {
+            {"id", idNuevaSeccion },
+            { "nombre", nombreNuevaSeccion }
+        };
+        bool creado = await servicioEntidad.CrearAsync(PROYECTO, TABLA, nuevaEntidad);
+        if (creado)
+        {
+            idNuevaSeccion = "";
+            nombreNuevaSeccion = "";
+            mostrarFormularioCrear = false;
+            await CargarProductos();
+        }
+        else
+        {
+            errorMensaje = "Error al crear la seccion.";
+        }
+    }
+
+    private void MostrarFormularioCrear()
+    {
+        mostrarFormularioCrear = true;
+        mostrarFormularioEditar = false;
+    }
+
+    private void MostrarFormularioEditar(Dictionary<string, object> producto)
+    {
+        idEditando = ObtenerValor(producto, "id");
+        claveEditando = ObtenerValor(producto, "nombre");
+        idEditado = idEditando;
+        nombreEditado = claveEditando;
+        mostrarFormularioEditar = true;
+        mostrarFormularioCrear = false;
+    }
+
+    private async Task ActualizarSeccion()
+    {
+        bool nombreflag = false;
+        bool idflag = false;
+        bool actualizado = false;
+        foreach (var producto in productos)
+        {
+            if (nombreEditado != ObtenerValor(producto, "nombre"))
+            {
+                idflag = true;
+            }
+            if (nombreEditado != ObtenerValor(producto, "nombre"))
+            {
+                nombreflag = true;
+            }
+        }
+        if (idflag == true)
+        {
+            var entidadActualizada = new Dictionary<string, object>
+            {
+                { "id", idEditado }
+            };
+            actualizado = await servicioEntidad.ActualizarAsync(PROYECTO, TABLA, "id", idEditando, entidadActualizada);
+        }
+        if (nombreflag == true)
+        {
+            var entidadActualizada = new Dictionary<string, object>
+            {
+                { "nombre", nombreEditado }
+            };
+            actualizado = await servicioEntidad.ActualizarAsync(PROYECTO, TABLA, "nombre", claveEditando, entidadActualizada);
+        }
+        if (actualizado)
+        {
+            mostrarFormularioEditar = false;
+            await CargarProductos();
+        }
+        else
+        {
+            errorMensaje = "Error al actualizar la seccion.";
+        }
+    }
+
+    private async Task EliminarSeccion(Dictionary<string, object> producto)
+    {
+        string claveEliminar = ObtenerValor(producto, "nombre");
+        if (!await ConfirmarEliminacion(claveEliminar))
+        {
+            return;
+        }
+        bool eliminado = await servicioEntidad.EliminarAsync(PROYECTO, TABLA, "nombre", claveEliminar);
+        if (eliminado)
+        {
+            await CargarProductos();
+        }
+        else
+        {
+            errorMensaje = "Error al eliminar la seccion.";
+        }
+    }
+
+    private async Task<bool> ConfirmarEliminacion(string nombre)
+    {
+        return await JS.InvokeAsync<bool>("confirm", $"¿Estás seguro de que quieres eliminar '{nombre}'?");
+    }
+
+    private void CancelarFormulario()
+    {
+        mostrarFormularioCrear = false;
+        mostrarFormularioEditar = false;
+        nombreNuevaSeccion = "";
+        idNuevaSeccion = "";
+        nombreEditado = "";
+        idEditado = "";
+    }
+
+    private string ObtenerValor(Dictionary<string, object> diccionario, string clave)
+    {
+        if (diccionario == null) return string.Empty;
+        return diccionario.TryGetValue(clave, out var valor) ? valor?.ToString() ?? string.Empty : string.Empty;
+    }
+}
