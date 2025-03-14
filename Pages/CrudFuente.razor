@@ -1,0 +1,215 @@
+﻿@page "/fuente"
+@using System.Collections.Generic
+@using System.Text.Json
+@using Services
+@inject ServicioEntidad servicioEntidad
+@inject NavigationManager navegacionManager
+@inject IJSRuntime JS
+
+<PageTitle>Lista de Fuentes</PageTitle>
+
+<h1>Fuentes</h1>
+
+<div class="mb-3">
+    <button class="btn btn-primary" @onclick="MostrarFormularioCrear">Crear Nuevo</button>
+</div>
+
+@if (mostrarFormularioCrear)
+{
+    <div class="card p-3 mb-3">
+        <h5>Nuevo Fuente</h5>
+        <label>Nombre:</label>
+        <input @bind="nombreNuevoFuente" class="form-contFuente" placeholder="Ingrese el nombre del Fuente" />
+        <button class="btn btn-success mt-2" @onclick="CrearNuevoFuente">Guardar</button>
+        <button class="btn btn-secondary mt-2" @onclick="CancelarFormulario">Cancelar</button>
+    </div>
+}
+
+@if (mostrarFormularioEditar)
+{
+    <div class="card p-3 mb-3">
+        <h5>Editar Fuente</h5>
+        <label>Nuevo Nombre:</label>
+        <input @bind="nombreEditado" class="form-contFuente" placeholder="Ingrese el nuevo nombre" />
+        <button class="btn btn-warning mt-2" @onclick="ActualizarFuente">Actualizar</button>
+        <button class="btn btn-secondary mt-2" @onclick="CancelarFormulario">Cancelar</button>
+    </div>
+}
+
+@if (cargando)
+{
+    <p><em>Cargando...</em></p>
+}
+else if (Fuentes == null || Fuentes.Count == 0)
+{
+    <p>No hay Fuentes disponibles.</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var Fuente in Fuentes)
+                {
+                    <tr>
+                        <td>@ObtenerValor(Fuente, "nombre")</td>
+                        <td>
+                            <button class="btn btn-warning btn-sm" @onclick="() => MostrarFormularioEditar(Fuente)">Editar</button>
+                            <button class="btn btn-danger btn-sm" @onclick="() => EliminarFuente(Fuente)">Eliminar</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@if (errorMensaje != null)
+{
+    <div class="alert alert-danger">
+        Error: @errorMensaje
+    </div>
+}
+
+@code {
+    private List<Dictionary<string, object>> Fuentes = new List<Dictionary<string, object>>();
+
+    private bool cargando = true;
+
+    private string? errorMensaje = null;
+
+    private const string PROYECTO = "Trabajo";
+
+    private const string TABLA = "fuente";
+
+    // Variables para el formulario de creación
+    private bool mostrarFormularioCrear = false;
+
+    private string nombreNuevoFuente = "";
+
+    // Variables para el formulario de edición
+    private bool mostrarFormularioEditar = false;
+
+    private string nombreEditado = "";
+
+    private string claveEditando = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarFuentes();
+    }
+
+    private async Task CargarFuentes()
+    {
+        cargando = true;
+        errorMensaje = null;
+        try
+        {
+            var resultado = await servicioEntidad.ObtenerTodosAsync(PROYECTO, TABLA);
+            Fuentes = resultado ?? new List<Dictionary<string, object>>();
+        }
+        catch (Exception ex)
+        {
+            errorMensaje = $"Error al cargar Fuentes: {ex.Message}";
+            Fuentes = new List<Dictionary<string, object>>();
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private async Task CrearNuevoFuente()
+    {
+        var nuevaEntidad = new Dictionary<string, object>
+        {
+            { "nombre", nombreNuevoFuente }
+        };
+        bool creado = await servicioEntidad.CrearAsync(PROYECTO, TABLA, nuevaEntidad);
+        if (creado)
+        {
+            nombreNuevoFuente = "";
+            mostrarFormularioCrear = false;
+            await CargarFuentes();
+        }
+        else
+        {
+            errorMensaje = "Error al crear el Fuente.";
+        }
+    }
+
+    private void MostrarFormularioCrear()
+    {
+        mostrarFormularioCrear = true;
+        mostrarFormularioEditar = false;
+    }
+
+    private void MostrarFormularioEditar(Dictionary<string, object> Fuente)
+    {
+        claveEditando = ObtenerValor(Fuente, "nombre");
+        nombreEditado = claveEditando;
+        mostrarFormularioEditar = true;
+        mostrarFormularioCrear = false;
+    }
+
+    private async Task ActualizarFuente()
+    {
+        var entidadActualizada = new Dictionary<string, object>
+        {
+            { "nombre", nombreEditado }
+        };
+        bool actualizado = await servicioEntidad.ActualizarAsync(PROYECTO, TABLA, "nombre", claveEditando, entidadActualizada);
+        if (actualizado)
+        {
+            mostrarFormularioEditar = false;
+            await CargarFuentes();
+        }
+        else
+        {
+            errorMensaje = "Error al actualizar el Fuente.";
+        }
+    }
+
+    private async Task EliminarFuente(Dictionary<string, object> Fuente)
+    {
+        string claveEliminar = ObtenerValor(Fuente, "nombre");
+        if (!await ConfirmarEliminacion(claveEliminar))
+        {
+            return; // Si el usuario cancela, no se realizara la eliminacion
+        }
+        bool eliminado = await servicioEntidad.EliminarAsync(PROYECTO, TABLA, "nombre", claveEliminar);
+        if (eliminado)
+        {
+            await CargarFuentes(); // Funcion para recargar la pagina y consultas
+        }
+        else
+        {
+            errorMensaje = "Error al eliminar el Fuente.";
+        }
+    }
+
+    private async Task<bool> ConfirmarEliminacion(string nombre)
+    {
+        return await JS.InvokeAsync<bool>("confirm", $"¿Estás seguro de que quieres eliminar '{nombre}'?");
+    }
+
+    private void CancelarFormulario()
+    {
+        mostrarFormularioCrear = false;
+        mostrarFormularioEditar = false;
+        nombreNuevoFuente = "";
+        nombreEditado = "";
+    }
+
+    private string ObtenerValor(Dictionary<string, object> diccionario, string clave)
+    {
+        if (diccionario == null) return string.Empty;
+        return diccionario.TryGetValue(clave, out var valor) ? valor?.ToString() ?? string.Empty : string.Empty;
+    }
+}
