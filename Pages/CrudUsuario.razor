@@ -1,0 +1,229 @@
+﻿@page "/usuario"
+@using System.Collections.Generic
+@using System.Text.Json
+@using Services
+@inject ServicioEntidad servicioEntidad
+@inject NavigationManager navegacionManager
+@inject IJSRuntime JS
+
+<PageTitle>Lista de Usuarios</PageTitle>
+
+<h1>Usuarios</h1>
+
+<div class="mb-3">
+    <button class="btn btn-primary" @onclick="MostrarFormularioCrear">Crear Nuevo</button>
+</div>
+
+@if (mostrarFormularioCrear)
+{
+    <div class="card p-3 mb-3">
+        <h5>Nuevo Usuario</h5>
+        <label>email:</label>
+        <input @bind="emailNuevoUsuario" class="form-contUsuario" placeholder="Ingrese el email del Usuario" />
+        <label>contrasena:</label>
+        <input @bind="contrasenaNuevoUsuario" class="form-contUsuario" placeholder="Ingrese la contraseña del usuario" />
+        <button class="btn btn-success mt-2" @onclick="CrearNuevoUsuario">Guardar</button>
+        <button class="btn btn-secondary mt-2" @onclick="CancelarFormulario">Cancelar</button>
+    </div>
+}
+
+@if (mostrarFormularioEditar)
+{
+    <div class="card p-3 mb-3">
+        <h5>Editar Usuario</h5>
+        <label>Nuevo email:</label>
+        <input @bind="emailEditado" class="form-contUsuario" placeholder="Ingrese el nuevo email" />
+        <label>Nueva contraseña:</label>
+        <input @bind="contrasenaEditado" class="form-contUsuario" placeholder="Ingrese la nueva contraseña" />
+        <button class="btn btn-warning mt-2" @onclick="ActualizarUsuario">Actualizar</button>
+        <button class="btn btn-secondary mt-2" @onclick="CancelarFormulario">Cancelar</button>
+    </div>
+}
+
+@if (cargando)
+{
+    <p><em>Cargando...</em></p>
+}
+else if (Usuarios == null || Usuarios.Count == 0)
+{
+    <p>No hay Usuarios disponibles.</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>email</th>
+                    <th>contraseña</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var Usuario in Usuarios)
+                {
+                    <tr>
+                        <td>@ObtenerValor(Usuario, "email")</td>
+                        <td>@ObtenerValor(Usuario, "contrasena")</td>
+                        <td>
+                            <button class="btn btn-warning btn-sm" @onclick="() => MostrarFormularioEditar(Usuario)">Editar</button>
+                            <button class="btn btn-danger btn-sm" @onclick="() => EliminarUsuario(Usuario)">Eliminar</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@if (errorMensaje != null)
+{
+    <div class="alert alert-danger">
+        Error: @errorMensaje
+    </div>
+}
+
+@code {
+    private List<Dictionary<string, object>> Usuarios = new List<Dictionary<string, object>>();
+
+    private bool cargando = true;
+
+    private string? errorMensaje = null;
+
+    private const string PROYECTO = "Trabajo";
+
+    private const string TABLA = "usuario";
+
+    // Variables para el formulario de creación
+    private bool mostrarFormularioCrear = false;
+
+    private string emailNuevoUsuario = "";
+    private string contrasenaNuevoUsuario = "";
+
+    // Variables para el formulario de edición
+    private bool mostrarFormularioEditar = false;
+
+    private string emailEditado = "";
+    private string contrasenaEditado = "";
+
+    private string claveEditando = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarUsuarios();
+    }
+
+    private async Task CargarUsuarios()
+    {
+        cargando = true;
+        errorMensaje = null;
+        try
+        {
+            var resultado = await servicioEntidad.ObtenerTodosAsync(PROYECTO, TABLA);
+            Usuarios = resultado ?? new List<Dictionary<string, object>>();
+        }
+        catch (Exception ex)
+        {
+            errorMensaje = $"Error al cargar Usuarios: {ex.Message}";
+            Usuarios = new List<Dictionary<string, object>>();
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private async Task CrearNuevoUsuario()
+    {
+        var nuevaEntidad = new Dictionary<string, object>
+        {
+            { "email", emailNuevoUsuario },
+            { "contrasena", contrasenaNuevoUsuario}
+        };
+        bool creado = await servicioEntidad.CrearAsync(PROYECTO, TABLA, nuevaEntidad);
+        if (creado)
+        {
+            emailNuevoUsuario = "";
+            contrasenaNuevoUsuario = "";
+            mostrarFormularioCrear = false;
+            await CargarUsuarios();
+        }
+        else
+        {
+            errorMensaje = "Error al crear el Usuario.";
+        }
+    }
+
+    private void MostrarFormularioCrear()
+    {
+        mostrarFormularioCrear = true;
+        mostrarFormularioEditar = false;
+    }
+
+    private void MostrarFormularioEditar(Dictionary<string, object> Usuario)
+    {
+        claveEditando = ObtenerValor(Usuario, "email");
+        emailEditado = claveEditando;
+        contrasenaEditado = ObtenerValor(Usuario, "contrasena");
+        mostrarFormularioEditar = true;
+        mostrarFormularioCrear = false;
+    }
+
+    private async Task ActualizarUsuario()
+    {
+        var entidadActualizada = new Dictionary<string, object>
+        {
+            { "email", emailEditado },
+            { "contrasena", contrasenaEditado}
+        };
+        bool actualizado = await servicioEntidad.ActualizarAsync(PROYECTO, TABLA, "email", claveEditando, entidadActualizada);
+        if (actualizado)
+        {
+            mostrarFormularioEditar = false;
+            await CargarUsuarios();
+        }
+        else
+        {
+            errorMensaje = "Error al actualizar el Usuario.";
+        }
+    }
+
+    private async Task EliminarUsuario(Dictionary<string, object> Usuario)
+    {
+        string claveEliminar = ObtenerValor(Usuario, "email");
+        if (!await ConfirmarEliminacion(claveEliminar))
+        {
+            return; // Si el usuario cancela, no se realizara la eliminacion
+        }
+        bool eliminado = await servicioEntidad.EliminarAsync(PROYECTO, TABLA, "email", claveEliminar);
+        if (eliminado)
+        {
+            await CargarUsuarios(); // Funcion para recargar la pagina y consultas
+        }
+        else
+        {
+            errorMensaje = "Error al eliminar el Usuario.";
+        }
+    }
+
+    private async Task<bool> ConfirmarEliminacion(string email)
+    {
+        return await JS.InvokeAsync<bool>("confirm", $"¿Estás seguro de que quieres eliminar '{email}'?");
+    }
+
+    private void CancelarFormulario()
+    {
+        mostrarFormularioCrear = false;
+        mostrarFormularioEditar = false;
+        emailNuevoUsuario = "";
+        emailEditado = "";
+        contrasenaNuevoUsuario = "";
+        contrasenaEditado = "";
+    }
+
+    private string ObtenerValor(Dictionary<string, object> diccionario, string clave)
+    {
+        if (diccionario == null) return string.Empty;
+        return diccionario.TryGetValue(clave, out var valor) ? valor?.ToString() ?? string.Empty : string.Empty;
+    }
+}
