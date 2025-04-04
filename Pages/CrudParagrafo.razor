@@ -1,4 +1,4 @@
-﻿@page "/Numeral"
+﻿@page "/Paragrafo"
 @using System.Collections.Generic
 @using System.Text.Json
 @using Services
@@ -6,9 +6,9 @@
 @inject NavigationManager navegacionManager
 @inject IJSRuntime JS
 
-<PageTitle>Lista de Numerales</PageTitle>
+<PageTitle>Lista de Paragrafos</PageTitle>
 
-<h1>Numerales</h1>
+<h1>Paragrafos</h1>
 
 <div class="mb-3">
     <button class="btn btn-primary" @onclick="MostrarFormularioCrear">Crear Nuevo</button>
@@ -17,19 +17,20 @@
 @if (mostrarFormularioCrear)
 {
     <div class="card p-3 mb-3">
-        <h5>Nuevo Numeral</h5>
+        <h5>Nuevo Paragrafo</h5>
         <label>ID:</label>
-        <input @bind="idNumeral" class="form-contNumeral" placeholder="Ingrese el ID del Numeral" />
+        <input @bind="idParagrafo" class="form-contParagrafo" placeholder="Ingrese el ID del Paragrafo" />
         <label>Descripcion:</label>
-        <input @bind="descripcionNumeral" class="form-contNumeral" placeholder="Ingrese la descripcion del Numeral" />
-        <label>Seccion:</label>
-        <select class="form-control" @bind="fkliteralNumeral">
-                                    @foreach (var v in Literales)
+        <input @bind="descripcionParagrafo" class="form-contParagrafo" placeholder="Ingrese la descripcion del Paragrafo" />
+        <label>Articulo:</label>
+        <select class="form-control" @bind="fkarticuloParagrafo">
+                                    @foreach (var v in Articulos)
                                     {
                                         <option value="@ObtenerValor(v, "id")">@ObtenerValor(v, "id")</option>
                                     }
          </select>
-        <button class="btn btn-success mt-2" @onclick="CrearNuevoNumeral">Guardar</button>
+
+        <button class="btn btn-success mt-2" @onclick="CrearNuevoParagrafo">Guardar</button>
         <button class="btn btn-secondary mt-2" @onclick="CancelarFormulario">Cancelar</button>
     </div>
 }
@@ -37,19 +38,19 @@
 @if (mostrarFormularioEditar)
 {
     <div class="card p-3 mb-3">
-        <h5>Editar Numeral</h5>
+        <h5>Editar Paragrafo</h5>
         <label>ID:</label>
-        <input @bind="idNumeral" class="form-contNumeral" placeholder="Ingrese el ID del Numeral" />
+        <input @bind="idParagrafo" class="form-contParagrafo" placeholder="Ingrese el ID del Paragrafo" />
         <label>Descripcion:</label>
-        <input @bind="descripcionNumeral" class="form-contNumeral" placeholder="Ingrese la descripcion del Numeral" />
-        <label>Seccion:</label>
-        <select class="form-control" @bind="fkliteralNumeral">
-                                    @foreach (var v in Literales)
+        <input @bind="descripcionParagrafo" class="form-contParagrafo" placeholder="Ingrese la descripcion del Paragrafo" />
+        <label>Articulo:</label>
+        <select class="form-control" @bind="fkarticuloParagrafo">
+                                    @foreach (var v in Articulos)
                                     {
                                         <option value="@ObtenerValor(v, "id")">@ObtenerValor(v, "id")</option>
                                     }
          </select>
-        <button class="btn btn-warning mt-2" @onclick="ActualizarNumeral">Actualizar</button>
+        <button class="btn btn-warning mt-2" @onclick="ActualizarParagrafo">Actualizar</button>
         <button class="btn btn-secondary mt-2" @onclick="CancelarFormulario">Cancelar</button>
     </div>
 }
@@ -58,9 +59,9 @@
 {
     <p><em>Cargando...</em></p>
 }
-else if (Numerales == null || Numerales.Count == 0)
+else if (Paragrafos == null || Paragrafos.Count == 0)
 {
-    <p>No hay Numerales disponibles.</p>
+    <p>No hay Paragrafos disponibles.</p>
 }
 else
 {
@@ -70,20 +71,20 @@ else
                 <tr>
                     <th>ID</th>
                     <th>Descripcion</th>
-                    <th>Literal</th>
+                    <th>Articulo</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach (var Numeral in Numerales)
+                @foreach (var Paragrafo in Paragrafos)
                 {
                     <tr>
-                        <td>@ObtenerValor(Numeral, "id")</td>
-                        <td>@ObtenerValor(Numeral, "descripcion")</td>
-                        <td>@ObtenerValor(Numeral, "fkidliteral")</td>
+                        <td>@ObtenerValor(Paragrafo, "id")</td>
+                        <td>@ObtenerValor(Paragrafo, "descripcion")</td>
+                        <td>@ObtenerValor(Paragrafo, "fkidarticulo")</td>
                         <td>
-                            <button class="btn btn-warning btn-sm" @onclick="() => MostrarFormularioEditar(Numeral)">Editar</button>
-                            <button class="btn btn-danger btn-sm" @onclick="() => EliminarNumeral(Numeral)">Eliminar</button>
+                            <button class="btn btn-warning btn-sm" @onclick="() => MostrarFormularioEditar(Paragrafo)">Editar</button>
+                            <button class="btn btn-danger btn-sm" @onclick="() => EliminarParagrafo(Paragrafo)">Eliminar</button>
                         </td>
                     </tr>
                 }
@@ -100,8 +101,8 @@ else
 }
 
 @code {
-    private List<Dictionary<string, object>> Numerales = new List<Dictionary<string, object>>();
-    private List<Dictionary<string, object>> Literales = new List<Dictionary<string, object>>();        
+    private List<Dictionary<string, object>> Paragrafos = new List<Dictionary<string, object>>();
+    private List<Dictionary<string, object>> Articulos = new List<Dictionary<string, object>>();        
 
     private bool cargando = true;
 
@@ -109,13 +110,13 @@ else
 
     private const string PROYECTO = "Trabajo";
 
-    private const string TABLA = "numeral";
+    private const string TABLA = "Paragrafo";
 
     // Variables para el formulario de creación
     private bool mostrarFormularioCrear = false;
-    private string idNumeral = "";
-    private string descripcionNumeral = "";
-    private string fkliteralNumeral = "";
+    private string idParagrafo = "";
+    private string descripcionParagrafo = "";
+    private string fkarticuloParagrafo = "";
 
 
     // Variables para el formulario de edición
@@ -123,28 +124,28 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        await CargarNumerales();
-        await CargarLiteral();
+        await CargarParagrafos();
+        await CargarArticulo();
     }
 
-    private async Task CargarLiteral()
+    private async Task CargarArticulo()
     {
-        Literales = await servicioEntidad.ObtenerTodosAsync(PROYECTO, "literal") ?? new();
+        Articulos = await servicioEntidad.ObtenerTodosAsync(PROYECTO, "Articulo") ?? new();
     }
 
-    private async Task CargarNumerales()
+    private async Task CargarParagrafos()
     {
         cargando = true;
         errorMensaje = null;
         try
         {
             var resultado = await servicioEntidad.ObtenerTodosAsync(PROYECTO, TABLA);
-            Numerales = resultado ?? new List<Dictionary<string, object>>();
+            Paragrafos = resultado ?? new List<Dictionary<string, object>>();
         }
         catch (Exception ex)
         {
-            errorMensaje = $"Error al cargar Numerales: {ex.Message}";
-            Numerales = new List<Dictionary<string, object>>();
+            errorMensaje = $"Error al cargar Paragrafos: {ex.Message}";
+            Paragrafos = new List<Dictionary<string, object>>();
         }
         finally
         {
@@ -152,26 +153,26 @@ else
         }
     }
 
-    private async Task CrearNuevoNumeral()
+    private async Task CrearNuevoParagrafo()
     {
         var nuevaEntidad = new Dictionary<string, object>
         {
-            { "id", idNumeral },
-            {"descripcion", descripcionNumeral},
-            {"fkidliteral",fkliteralNumeral }
+            { "id", idParagrafo },
+            {"descripcion", descripcionParagrafo},
+            {"fkidarticulo",fkarticuloParagrafo }
         };
         bool creado = await servicioEntidad.CrearAsync(PROYECTO, TABLA, nuevaEntidad);
         if (creado)
         {
-            idNumeral ="";
-            descripcionNumeral ="";
-            fkliteralNumeral = "";
+            idParagrafo ="";
+            descripcionParagrafo ="";
+            fkarticuloParagrafo = "";
             mostrarFormularioCrear = false;
-            await CargarNumerales();
+            await CargarParagrafos();
         }
         else
         {
-            errorMensaje = "Error al crear el Numeral.";
+            errorMensaje = "Error al crear el Paragrafo.";
         }
     }
 
@@ -181,41 +182,41 @@ else
         mostrarFormularioEditar = false;
     }
 
-    private void MostrarFormularioEditar(Dictionary<string, object> Numeral)
+    private void MostrarFormularioEditar(Dictionary<string, object> Paragrafo)
     {
-        idNumeral = ObtenerValor(Numeral, "id");
-        descripcionNumeral =ObtenerValor(Numeral, "descripcion");
-        fkliteralNumeral = ObtenerValor(Numeral, "fkidliteral");
+        idParagrafo = ObtenerValor(Paragrafo, "id");
+        descripcionParagrafo =ObtenerValor(Paragrafo, "descripcion");
+        fkarticuloParagrafo = ObtenerValor(Paragrafo, "fkidarticulo");
         mostrarFormularioEditar = true;
         mostrarFormularioCrear = false;
     }
 
-    private async Task ActualizarNumeral()
+    private async Task ActualizarParagrafo()
     {
         var entidadActualizada = new Dictionary<string, object>
         {
-            { "id", idNumeral },
-            {"descripcion", descripcionNumeral},
-            {"fkidliteral",fkliteralNumeral }
+            { "id", idParagrafo },
+            {"descripcion", descripcionParagrafo},
+            {"fkidarticulo",fkarticuloParagrafo }
         };
-        bool actualizado = await servicioEntidad.ActualizarAsync(PROYECTO, TABLA, "id", idNumeral, entidadActualizada);
+        bool actualizado = await servicioEntidad.ActualizarAsync(PROYECTO, TABLA, "id", idParagrafo, entidadActualizada);
         if (actualizado)
         {
-            idNumeral ="";
-            descripcionNumeral ="";
-            fkliteralNumeral = "";
+            idParagrafo ="";
+            descripcionParagrafo ="";
+            fkarticuloParagrafo = "";
             mostrarFormularioEditar = false;
-            await CargarNumerales();
+            await CargarParagrafos();
         }
         else
         {
-            errorMensaje = "Error al actualizar el Numeral.";
+            errorMensaje = "Error al actualizar el Paragrafo.";
         }
     }
 
-    private async Task EliminarNumeral(Dictionary<string, object> Numeral)
+    private async Task EliminarParagrafo(Dictionary<string, object> Paragrafo)
     {
-        string claveEliminar = ObtenerValor(Numeral, "id");
+        string claveEliminar = ObtenerValor(Paragrafo, "id");
         if (!await ConfirmarEliminacion(claveEliminar))
         {
             return; // Si el usuario cancela, no se realizara la eliminacion
@@ -223,11 +224,11 @@ else
         bool eliminado = await servicioEntidad.EliminarAsync(PROYECTO, TABLA, "id", claveEliminar);
         if (eliminado)
         {
-            await CargarNumerales(); // Funcion para recargar la pagina y consultas
+            await CargarParagrafos(); // Funcion para recargar la pagina y consultas
         }
         else
         {
-            errorMensaje = "Error al eliminar el Numeral.";
+            errorMensaje = "Error al eliminar el Paragrafo.";
         }
     }
 
@@ -240,9 +241,9 @@ else
     {
         mostrarFormularioCrear = false;
         mostrarFormularioEditar = false;
-        idNumeral ="";
-        descripcionNumeral ="";
-        fkliteralNumeral = "";
+        idParagrafo ="";
+        descripcionParagrafo ="";
+        fkarticuloParagrafo = "";
     }
 
     private string ObtenerValor(Dictionary<string, object> diccionario, string clave)
