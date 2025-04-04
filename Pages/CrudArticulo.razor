@@ -254,12 +254,12 @@ else
 
     private async Task EliminarArticulo(Dictionary<string, object> Articulo)
     {
-        string claveEliminar = ObtenerValor(Articulo, "nombre");
+        string claveEliminar = ObtenerValor(Articulo, "id");
         if (!await ConfirmarEliminacion(claveEliminar))
         {
             return; // Si el usuario cancela, no se realizara la eliminacion
         }
-        bool eliminado = await servicioEntidad.EliminarAsync(PROYECTO, TABLA, "nombre", claveEliminar);
+        bool eliminado = await servicioEntidad.EliminarAsync(PROYECTO, TABLA, "id", claveEliminar);
         if (eliminado)
         {
             await CargarArticulos(); // Funcion para recargar la pagina y consultas

@@ -1,0 +1,253 @@
+﻿@page "/Literal"
+@using System.Collections.Generic
+@using System.Text.Json
+@using Services
+@inject ServicioEntidad servicioEntidad
+@inject NavigationManager navegacionManager
+@inject IJSRuntime JS
+
+<PageTitle>Lista de Literales</PageTitle>
+
+<h1>Literales</h1>
+
+<div class="mb-3">
+    <button class="btn btn-primary" @onclick="MostrarFormularioCrear">Crear Nuevo</button>
+</div>
+
+@if (mostrarFormularioCrear)
+{
+    <div class="card p-3 mb-3">
+        <h5>Nuevo Literal</h5>
+        <label>ID:</label>
+        <input @bind="idLiteral" class="form-contLiteral" placeholder="Ingrese el ID del Literal" />
+        <label>Descripcion:</label>
+        <input @bind="descripcionLiteral" class="form-contLiteral" placeholder="Ingrese la descripcion del Literal" />
+        <label>Articulo:</label>
+        <select class="form-control" @bind="fkarticuloLiteral">
+                                    @foreach (var v in Articulo)
+                                    {
+                                        <option value="@ObtenerValor(v, "id")">@ObtenerValor(v, "nombre")</option>
+                                    }
+         </select>
+        <button class="btn btn-success mt-2" @onclick="CrearNuevoLiteral">Guardar</button>
+        <button class="btn btn-secondary mt-2" @onclick="CancelarFormulario">Cancelar</button>
+    </div>
+}
+
+@if (mostrarFormularioEditar)
+{
+    <div class="card p-3 mb-3">
+        <h5>Editar Literal</h5>
+        <label>ID:</label>
+        <input @bind="idLiteral" class="form-contLiteral" placeholder="Ingrese el ID del Literal" />
+        <label>Descripcion:</label>
+        <input @bind="descripcionLiteral" class="form-contLiteral" placeholder="Ingrese la descripcion del Literal" />
+        <label>Articulo:</label>
+        <select class="form-control" @bind="fkarticuloLiteral">
+                                    @foreach (var v in Articulo)
+                                    {
+                                        <option value="@ObtenerValor(v, "id")">@ObtenerValor(v, "nombre")</option>
+                                    }
+         </select>
+        <button class="btn btn-warning mt-2" @onclick="ActualizarLiteral">Actualizar</button>
+        <button class="btn btn-secondary mt-2" @onclick="CancelarFormulario">Cancelar</button>
+    </div>
+}
+
+@if (cargando)
+{
+    <p><em>Cargando...</em></p>
+}
+else if (Literales == null || Literales.Count == 0)
+{
+    <p>No hay Literales disponibles.</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Descripcion</th>
+                    <th>Articulo</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var Literal in Literales)
+                {
+                    <tr>
+                        <td>@ObtenerValor(Literal, "id")</td>
+                        <td>@ObtenerValor(Literal, "nombre")</td>
+                        <td>@ObtenerValor(Literal, "descripcion")</td>
+                        <td>@ObtenerValor(Literal, "fkidarticulo")</td>
+                        <td>
+                            <button class="btn btn-warning btn-sm" @onclick="() => MostrarFormularioEditar(Literal)">Editar</button>
+                            <button class="btn btn-danger btn-sm" @onclick="() => EliminarLiteral(Literal)">Eliminar</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@if (errorMensaje != null)
+{
+    <div class="alert alert-danger">
+        Error: @errorMensaje
+    </div>
+}
+
+@code {
+    private List<Dictionary<string, object>> Literales = new List<Dictionary<string, object>>();
+    private List<Dictionary<string, object>> Articulo = new List<Dictionary<string, object>>();     
+
+    private bool cargando = true;
+
+    private string? errorMensaje = null;
+
+    private const string PROYECTO = "Trabajo";
+
+    private const string TABLA = "literal";
+
+    // Variables para el formulario de creación
+    private bool mostrarFormularioCrear = false;
+    private string idLiteral = "";
+    private string descripcionLiteral = "";
+    private string fkarticuloLiteral = "";
+
+    // Variables para el formulario de edición
+    private bool mostrarFormularioEditar = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarLiterales();
+        await CargarSeccion();
+    }
+
+    private async Task CargarSeccion()
+    {
+        Articulo = await servicioEntidad.ObtenerTodosAsync(PROYECTO, "articulo") ?? new();
+    }
+
+    private async Task CargarLiterales()
+    {
+        cargando = true;
+        errorMensaje = null;
+        try
+        {
+            var resultado = await servicioEntidad.ObtenerTodosAsync(PROYECTO, TABLA);
+            Literales = resultado ?? new List<Dictionary<string, object>>();
+        }
+        catch (Exception ex)
+        {
+            errorMensaje = $"Error al cargar Literales: {ex.Message}";
+            Literales = new List<Dictionary<string, object>>();
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private async Task CrearNuevoLiteral()
+    {
+        var nuevaEntidad = new Dictionary<string, object>
+        {
+            { "id", idLiteral },
+            {"descripcion", descripcionLiteral},
+            {"fkidarticulo",fkarticuloLiteral }
+        };
+        bool creado = await servicioEntidad.CrearAsync(PROYECTO, TABLA, nuevaEntidad);
+        if (creado)
+        {
+            idLiteral ="";
+            descripcionLiteral ="";
+            fkarticuloLiteral = "";
+            mostrarFormularioCrear = false;
+            await CargarLiterales();
+        }
+        else
+        {
+            errorMensaje = "Error al crear el Literal.";
+        }
+    }
+
+    private void MostrarFormularioCrear()
+    {
+        mostrarFormularioCrear = true;
+        mostrarFormularioEditar = false;
+    }
+
+    private void MostrarFormularioEditar(Dictionary<string, object> Literal)
+    {
+        idLiteral = ObtenerValor(Literal, "id");
+        descripcionLiteral =ObtenerValor(Literal, "descripcion");
+        fkarticuloLiteral = ObtenerValor(Literal, "fkidarticulo");
+        mostrarFormularioEditar = true;
+        mostrarFormularioCrear = false;
+    }
+
+    private async Task ActualizarLiteral()
+    {
+        var entidadActualizada = new Dictionary<string, object>
+        {
+            { "id", idLiteral },
+            {"descripcion", descripcionLiteral},
+            {"fkidarticulo",fkarticuloLiteral }
+        };
+        bool actualizado = await servicioEntidad.ActualizarAsync(PROYECTO, TABLA, "id", idLiteral, entidadActualizada);
+        if (actualizado)
+        {
+            idLiteral ="";
+            descripcionLiteral ="";
+            fkarticuloLiteral = "";
+            mostrarFormularioEditar = false;
+            await CargarLiterales();
+        }
+        else
+        {
+            errorMensaje = "Error al actualizar el Literal.";
+        }
+    }
+
+    private async Task EliminarLiteral(Dictionary<string, object> Literal)
+    {
+        string claveEliminar = ObtenerValor(Literal, "id");
+        if (!await ConfirmarEliminacion(claveEliminar))
+        {
+            return; // Si el usuario cancela, no se realizara la eliminacion
+        }
+        bool eliminado = await servicioEntidad.EliminarAsync(PROYECTO, TABLA, "id", claveEliminar);
+        if (eliminado)
+        {
+            await CargarLiterales(); // Funcion para recargar la pagina y consultas
+        }
+        else
+        {
+            errorMensaje = "Error al eliminar el Literal.";
+        }
+    }
+
+    private async Task<bool> ConfirmarEliminacion(string nombre)
+    {
+        return await JS.InvokeAsync<bool>("confirm", $"¿Estás seguro de que quieres eliminar '{nombre}'?");
+    }
+
+    private void CancelarFormulario()
+    {
+        mostrarFormularioCrear = false;
+        mostrarFormularioEditar = false;
+        idLiteral ="";
+        descripcionLiteral ="";
+        fkarticuloLiteral = "";
+    }
+    private string ObtenerValor(Dictionary<string, object> diccionario, string clave)
+    {
+        if (diccionario == null) return string.Empty;
+        return diccionario.TryGetValue(clave, out var valor) ? valor?.ToString() ?? string.Empty : string.Empty;
+    }
+}
