@@ -1,0 +1,294 @@
+﻿@page "/Articulo"
+@using System.Collections.Generic
+@using System.Text.Json
+@using Services
+@inject ServicioEntidad servicioEntidad
+@inject NavigationManager navegacionManager
+@inject IJSRuntime JS
+
+<PageTitle>Lista de Articulos</PageTitle>
+
+<h1>Articulos</h1>
+
+<div class="mb-3">
+    <button class="btn btn-primary" @onclick="MostrarFormularioCrear">Crear Nuevo</button>
+</div>
+
+@if (mostrarFormularioCrear)
+{
+    <div class="card p-3 mb-3">
+        <h5>Nuevo Articulo</h5>
+        <label>ID:</label>
+        <input @bind="idArticulo" class="form-contArticulo" placeholder="Ingrese el ID del Articulo" />
+        <label>Nombre:</label>
+        <input @bind="nombreArticulo" class="form-contArticulo" placeholder="Ingrese el nombre del Articulo" />
+        <label>Descripcion:</label>
+        <input @bind="descripcionArticulo" class="form-contArticulo" placeholder="Ingrese la descripcion del Articulo" />
+        <label>Seccion:</label>
+        <select class="form-control" @bind="fkseccionArticulo">
+                                    @foreach (var v in Seccion)
+                                    {
+                                        <option value="@ObtenerValor(v, "id")">@ObtenerValor(v, "nombre")</option>
+                                    }
+         </select>
+         <label>SubSeccion:</label>
+        <select class="form-control" @bind="fksubseccionArticulo">
+                                    @foreach (var v in Subseccion)
+                                    {
+                                        <option value="@ObtenerValor(v, "id")">@ObtenerValor(v, "nombre")</option>
+                                    }
+         </select>
+        <button class="btn btn-success mt-2" @onclick="CrearNuevoArticulo">Guardar</button>
+        <button class="btn btn-secondary mt-2" @onclick="CancelarFormulario">Cancelar</button>
+    </div>
+}
+
+@if (mostrarFormularioEditar)
+{
+    <div class="card p-3 mb-3">
+        <h5>Editar Articulo</h5>
+        <label>ID:</label>
+        <input @bind="idArticulo" class="form-contArticulo" placeholder="Ingrese el ID del Articulo" />
+        <label>Nuevo Nombre:</label>
+        <input @bind="nombreArticulo" class="form-contArticulo" placeholder="Ingrese el nuevo nombre" />
+        <label>Descripcion:</label>
+        <input @bind="descripcionArticulo" class="form-contArticulo" placeholder="Ingrese la descripcion del Articulo" />
+        <label>Seccion:</label>
+        <select class="form-control" @bind="fkseccionArticulo">
+                                    @foreach (var v in Seccion)
+                                    {
+                                        <option value="@ObtenerValor(v, "id")">@ObtenerValor(v, "nombre")</option>
+                                    }
+         </select>
+         <label>SubSeccion:</label>
+        <select class="form-control" @bind="fksubseccionArticulo">
+                                    @foreach (var v in Subseccion)
+                                    {
+                                        <option value="@ObtenerValor(v, "id")">@ObtenerValor(v, "nombre")</option>
+                                    }
+         </select>
+        <button class="btn btn-warning mt-2" @onclick="ActualizarArticulo">Actualizar</button>
+        <button class="btn btn-secondary mt-2" @onclick="CancelarFormulario">Cancelar</button>
+    </div>
+}
+
+@if (cargando)
+{
+    <p><em>Cargando...</em></p>
+}
+else if (Articulos == null || Articulos.Count == 0)
+{
+    <p>No hay Articulos disponibles.</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Descripcion</th>
+                    <th>Seccion</th>
+                    <th>Subseccion</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var Articulo in Articulos)
+                {
+                    <tr>
+                        <td>@ObtenerValor(Articulo, "id")</td>
+                        <td>@ObtenerValor(Articulo, "nombre")</td>
+                        <td>@ObtenerValor(Articulo, "descripcion")</td>
+                        <td>@ObtenerValor(Articulo, "fkidseccion")</td>
+                        <td>@ObtenerValor(Articulo, "fkidsubseccion")</td>
+                        <td>
+                            <button class="btn btn-warning btn-sm" @onclick="() => MostrarFormularioEditar(Articulo)">Editar</button>
+                            <button class="btn btn-danger btn-sm" @onclick="() => EliminarArticulo(Articulo)">Eliminar</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@if (errorMensaje != null)
+{
+    <div class="alert alert-danger">
+        Error: @errorMensaje
+    </div>
+}
+
+@code {
+    private List<Dictionary<string, object>> Articulos = new List<Dictionary<string, object>>();
+    private List<Dictionary<string, object>> Seccion = new List<Dictionary<string, object>>(); 
+    private List<Dictionary<string, object>> Subseccion = new List<Dictionary<string, object>>();       
+
+    private bool cargando = true;
+
+    private string? errorMensaje = null;
+
+    private const string PROYECTO = "Trabajo";
+
+    private const string TABLA = "Articulo";
+
+    // Variables para el formulario de creación
+    private bool mostrarFormularioCrear = false;
+    private string idArticulo = "";
+    private string nombreArticulo = "";
+    private string descripcionArticulo = "";
+    private string fkseccionArticulo = "";
+    private string fksubseccionArticulo = "";
+
+    // Variables para el formulario de edición
+    private bool mostrarFormularioEditar = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarArticulos();
+        await CargarSeccion();
+        await CargarSubseccion();
+    }
+
+    private async Task CargarSeccion()
+    {
+        Seccion = await servicioEntidad.ObtenerTodosAsync(PROYECTO, "seccion") ?? new();
+    }
+    private async Task CargarSubseccion()
+    {
+        Subseccion = await servicioEntidad.ObtenerTodosAsync(PROYECTO, "subseccion") ?? new();
+    }
+
+    private async Task CargarArticulos()
+    {
+        cargando = true;
+        errorMensaje = null;
+        try
+        {
+            var resultado = await servicioEntidad.ObtenerTodosAsync(PROYECTO, TABLA);
+            Articulos = resultado ?? new List<Dictionary<string, object>>();
+        }
+        catch (Exception ex)
+        {
+            errorMensaje = $"Error al cargar Articulos: {ex.Message}";
+            Articulos = new List<Dictionary<string, object>>();
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private async Task CrearNuevoArticulo()
+    {
+        var nuevaEntidad = new Dictionary<string, object>
+        {
+            { "id", idArticulo },
+            { "nombre", nombreArticulo },
+            {"descripcion", descripcionArticulo},
+            {"fkidseccion",fkseccionArticulo },
+            {"fkidsubseccion",fksubseccionArticulo }
+        };
+        bool creado = await servicioEntidad.CrearAsync(PROYECTO, TABLA, nuevaEntidad);
+        if (creado)
+        {
+            idArticulo ="";
+            nombreArticulo = "";
+            descripcionArticulo ="";
+            fkseccionArticulo = "";
+            fksubseccionArticulo = "";
+            mostrarFormularioCrear = false;
+            await CargarArticulos();
+        }
+        else
+        {
+            errorMensaje = "Error al crear el Articulo.";
+        }
+    }
+
+    private void MostrarFormularioCrear()
+    {
+        mostrarFormularioCrear = true;
+        mostrarFormularioEditar = false;
+    }
+
+    private void MostrarFormularioEditar(Dictionary<string, object> Articulo)
+    {
+        idArticulo = ObtenerValor(Articulo, "id");
+        nombreArticulo = ObtenerValor(Articulo, "nombre");
+        descripcionArticulo =ObtenerValor(Articulo, "descripcion");
+        fkseccionArticulo = ObtenerValor(Articulo, "fkidseccion");
+        fksubseccionArticulo = ObtenerValor(Articulo, "fkidsubseccion");
+        mostrarFormularioEditar = true;
+        mostrarFormularioCrear = false;
+    }
+
+    private async Task ActualizarArticulo()
+    {
+        var entidadActualizada = new Dictionary<string, object>
+        {
+            { "id", idArticulo },
+            { "nombre", nombreArticulo },
+            {"descripcion", descripcionArticulo},
+            {"fkidseccion",fkseccionArticulo },
+            {"fkidsubseccion",fksubseccionArticulo }
+        };
+        bool actualizado = await servicioEntidad.ActualizarAsync(PROYECTO, TABLA, "id", idArticulo, entidadActualizada);
+        if (actualizado)
+        {
+            idArticulo ="";
+            nombreArticulo = "";
+            descripcionArticulo ="";
+            fkseccionArticulo = "";
+            fksubseccionArticulo = "";
+            mostrarFormularioEditar = false;
+            await CargarArticulos();
+        }
+        else
+        {
+            errorMensaje = "Error al actualizar el Articulo.";
+        }
+    }
+
+    private async Task EliminarArticulo(Dictionary<string, object> Articulo)
+    {
+        string claveEliminar = ObtenerValor(Articulo, "nombre");
+        if (!await ConfirmarEliminacion(claveEliminar))
+        {
+            return; // Si el usuario cancela, no se realizara la eliminacion
+        }
+        bool eliminado = await servicioEntidad.EliminarAsync(PROYECTO, TABLA, "nombre", claveEliminar);
+        if (eliminado)
+        {
+            await CargarArticulos(); // Funcion para recargar la pagina y consultas
+        }
+        else
+        {
+            errorMensaje = "Error al eliminar el Articulo.";
+        }
+    }
+
+    private async Task<bool> ConfirmarEliminacion(string nombre)
+    {
+        return await JS.InvokeAsync<bool>("confirm", $"¿Estás seguro de que quieres eliminar '{nombre}'?");
+    }
+
+    private void CancelarFormulario()
+    {
+        mostrarFormularioCrear = false;
+        mostrarFormularioEditar = false;
+        idArticulo ="";
+        nombreArticulo = "";
+        descripcionArticulo ="";
+        fkseccionArticulo = "";
+        fksubseccionArticulo = "";
+    }
+
+    private string ObtenerValor(Dictionary<string, object> diccionario, string clave)
+    {
+        if (diccionario == null) return string.Empty;
+        return diccionario.TryGetValue(clave, out var valor) ? valor?.ToString() ?? string.Empty : string.Empty;
+    }
+}

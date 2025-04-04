@@ -19,7 +19,7 @@
     <div class="card p-3 mb-3">
         <h5>Nuevo Sentido</h5>
         <label>Nombre:</label>
-        <input @bind="nombreNuevoSentido" class="form-control" placeholder="Ingrese el nombre del sentido" />
+        <input @bind="nombreNuevoSentido" class="form-contsentido" placeholder="Ingrese el nombre del sentido" />
         <button class="btn btn-success mt-2" @onclick="CrearNuevoSentido">Guardar</button>
         <button class="btn btn-secondary mt-2" @onclick="CancelarFormulario">Cancelar</button>
     </div>
@@ -30,7 +30,7 @@
     <div class="card p-3 mb-3">
         <h5>Editar Sentido</h5>
         <label>Nuevo Nombre:</label>
-        <input @bind="nombreEditado" class="form-control" placeholder="Ingrese el nuevo nombre" />
+        <input @bind="nombreEditado" class="form-contsentido" placeholder="Ingrese el nuevo nombre" />
         <button class="btn btn-warning mt-2" @onclick="ActualizarSentido">Actualizar</button>
         <button class="btn btn-secondary mt-2" @onclick="CancelarFormulario">Cancelar</button>
     </div>
@@ -40,9 +40,9 @@
 {
     <p><em>Cargando...</em></p>
 }
-else if (productos == null || productos.Count == 0)
+else if (sentidos == null || sentidos.Count == 0)
 {
-    <p>No hay productos disponibles.</p>
+    <p>No hay sentidos disponibles.</p>
 }
 else
 {
@@ -55,13 +55,13 @@ else
                 </tr>
             </thead>
             <tbody>
-                @foreach (var producto in productos)
+                @foreach (var sentido in sentidos)
                 {
                     <tr>
-                        <td>@ObtenerValor(producto, "nombre")</td>
+                        <td>@ObtenerValor(sentido, "nombre")</td>
                         <td>
-                            <button class="btn btn-warning btn-sm" @onclick="() => MostrarFormularioEditar(producto)">Editar</button>
-                            <button class="btn btn-danger btn-sm" @onclick="() => EliminarSentido(producto)">Eliminar</button>
+                            <button class="btn btn-warning btn-sm" @onclick="() => MostrarFormularioEditar(sentido)">Editar</button>
+                            <button class="btn btn-danger btn-sm" @onclick="() => EliminarSentido(sentido)">Eliminar</button>
                         </td>
                     </tr>
                 }
@@ -78,7 +78,7 @@ else
 }
 
 @code {
-    private List<Dictionary<string, object>> productos = new List<Dictionary<string, object>>();
+    private List<Dictionary<string, object>> sentidos = new List<Dictionary<string, object>>();
 
     private bool cargando = true;
 
@@ -102,22 +102,22 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        await CargarProductos();
+        await Cargarsentidos();
     }
 
-    private async Task CargarProductos()
+    private async Task Cargarsentidos()
     {
         cargando = true;
         errorMensaje = null;
         try
         {
             var resultado = await servicioEntidad.ObtenerTodosAsync(PROYECTO, TABLA);
-            productos = resultado ?? new List<Dictionary<string, object>>();
+            sentidos = resultado ?? new List<Dictionary<string, object>>();
         }
         catch (Exception ex)
         {
-            errorMensaje = $"Error al cargar productos: {ex.Message}";
-            productos = new List<Dictionary<string, object>>();
+            errorMensaje = $"Error al cargar sentidos: {ex.Message}";
+            sentidos = new List<Dictionary<string, object>>();
         }
         finally
         {
@@ -136,7 +136,7 @@ else
         {
             nombreNuevoSentido = "";
             mostrarFormularioCrear = false;
-            await CargarProductos();
+            await Cargarsentidos();
         }
         else
         {
@@ -150,9 +150,9 @@ else
         mostrarFormularioEditar = false;
     }
 
-    private void MostrarFormularioEditar(Dictionary<string, object> producto)
+    private void MostrarFormularioEditar(Dictionary<string, object> sentido)
     {
-        claveEditando = ObtenerValor(producto, "nombre");
+        claveEditando = ObtenerValor(sentido, "nombre");
         nombreEditado = claveEditando;
         mostrarFormularioEditar = true;
         mostrarFormularioCrear = false;
@@ -168,7 +168,7 @@ else
         if (actualizado)
         {
             mostrarFormularioEditar = false;
-            await CargarProductos();
+            await Cargarsentidos();
         }
         else
         {
@@ -176,9 +176,9 @@ else
         }
     }
 
-    private async Task EliminarSentido(Dictionary<string, object> producto)
+    private async Task EliminarSentido(Dictionary<string, object> sentido)
     {
-        string claveEliminar = ObtenerValor(producto, "nombre");
+        string claveEliminar = ObtenerValor(sentido, "nombre");
         if (!await ConfirmarEliminacion(claveEliminar))
         {
             return; // Si el usuario cancela, no se realizara la eliminacion
@@ -186,7 +186,7 @@ else
         bool eliminado = await servicioEntidad.EliminarAsync(PROYECTO, TABLA, "nombre", claveEliminar);
         if (eliminado)
         {
-            await CargarProductos(); // Funcion para recargar la pagina y consultas
+            await Cargarsentidos(); // Funcion para recargar la pagina y consultas
         }
         else
         {
