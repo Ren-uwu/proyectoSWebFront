@@ -69,7 +69,6 @@ else
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Nombre</th>
                     <th>Descripcion</th>
                     <th>Articulo</th>
                     <th>Acciones</th>
@@ -80,7 +79,6 @@ else
                 {
                     <tr>
                         <td>@ObtenerValor(Literal, "id")</td>
-                        <td>@ObtenerValor(Literal, "nombre")</td>
                         <td>@ObtenerValor(Literal, "descripcion")</td>
                         <td>@ObtenerValor(Literal, "fkidarticulo")</td>
                         <td>
@@ -125,10 +123,10 @@ else
     protected override async Task OnInitializedAsync()
     {
         await CargarLiterales();
-        await CargarSeccion();
+        await CargarArticulo();
     }
 
-    private async Task CargarSeccion()
+    private async Task CargarArticulo()
     {
         Articulo = await servicioEntidad.ObtenerTodosAsync(PROYECTO, "articulo") ?? new();
     }
