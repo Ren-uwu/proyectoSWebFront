@@ -1,0 +1,249 @@
+﻿@page "/Variable"
+@using System.Collections.Generic
+@using System.Text.Json
+@using Services
+@inject ServicioEntidad servicioEntidad
+@inject NavigationManager navegacionManager
+@inject IJSRuntime JS
+
+<PageTitle>Lista de Variables</PageTitle>
+
+<h1>Variables</h1>
+
+<div class="mb-3">
+    <button class="btn btn-primary" @onclick="MostrarFormularioCrear">Crear Nuevo</button>
+</div>
+
+@if (mostrarFormularioCrear)
+{
+    <div class="card p-3 mb-3">
+        <h5>Nuevo Variable</h5>
+        <label>Nombre:</label>
+        <input @bind="nombreVariable" class="form-contVariable" placeholder="Ingrese la descripcion del Variable" />
+        <label>Usuario:</label>
+        <select class="form-control" @bind="fkemailusuarioVariable">
+                                    @foreach (var v in Usuarios)
+                                    {
+                                        <option value="@ObtenerValor(v, "email")">@ObtenerValor(v, "email")</option>
+                                    }
+         </select>
+
+        <button class="btn btn-success mt-2" @onclick="CrearNuevoVariable">Guardar</button>
+        <button class="btn btn-secondary mt-2" @onclick="CancelarFormulario">Cancelar</button>
+    </div>
+}
+
+@if (mostrarFormularioEditar)
+{
+    <div class="card p-3 mb-3">
+        <h5>Editar Variable</h5>
+        <label>Nombre:</label>
+        <input @bind="nombreVariable" class="form-contVariable" placeholder="Ingrese la descripcion del Variable" />
+        <label>Usuario:</label>
+        <select class="form-control" @bind="fkemailusuarioVariable">
+                                    @foreach (var v in Usuarios)
+                                    {
+                                        <option value="@ObtenerValor(v, "email")">@ObtenerValor(v, "email")</option>
+                                    }
+         </select>
+        <button class="btn btn-warning mt-2" @onclick="ActualizarVariable">Actualizar</button>
+        <button class="btn btn-secondary mt-2" @onclick="CancelarFormulario">Cancelar</button>
+    </div>
+}
+
+@if (cargando)
+{
+    <p><em>Cargando...</em></p>
+}
+else if (Variables == null || Variables.Count == 0)
+{
+    <p>No hay Variables disponibles.</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Fecha Creacion</th>
+                    <th>Usuario</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var Variable in Variables)
+                {
+                    <tr>
+                        <td>@ObtenerValor(Variable, "nombre")</td>
+                        <td>@ObtenerValor(Variable, "fechacreacion")</td>
+                        <td>@ObtenerValor(Variable, "fkemailusuario")</td>
+                        <td>
+                            <button class="btn btn-warning btn-sm" @onclick="() => MostrarFormularioEditar(Variable)">Editar</button>
+                            <button class="btn btn-danger btn-sm" @onclick="() => EliminarVariable(Variable)">Eliminar</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@if (errorMensaje != null)
+{
+    <div class="alert alert-danger">
+        Error: @errorMensaje
+    </div>
+}
+
+@code {
+    private List<Dictionary<string, object>> Variables = new List<Dictionary<string, object>>();
+    private List<Dictionary<string, object>> Usuarios = new List<Dictionary<string, object>>();        
+
+    private bool cargando = true;
+
+    private string? errorMensaje = null;
+
+    private const string PROYECTO = "Trabajo";
+
+    private const string TABLA = "Variable";
+
+    // Variable para el formulario de creación
+    private bool mostrarFormularioCrear = false;
+    private string idVariable = "";
+    private string nombreVariable = "";
+    private DateTime fechacreacionVariable = DateTime.MinValue;
+    private string fkemailusuarioVariable = "";
+
+
+    // Variable para el formulario de edición
+    private bool mostrarFormularioEditar = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarVariables();
+        await CargarUsuario();
+    }
+
+    private async Task CargarUsuario()
+    {
+        Usuarios = await servicioEntidad.ObtenerTodosAsync(PROYECTO, "usuario") ?? new();
+    }
+
+    private async Task CargarVariables()
+    {
+        cargando = true;
+        errorMensaje = null;
+        try
+        {
+            var resultado = await servicioEntidad.ObtenerTodosAsync(PROYECTO, TABLA);
+            Variables = resultado ?? new List<Dictionary<string, object>>();
+        }
+        catch (Exception ex)
+        {
+            errorMensaje = $"Error al cargar Variables: {ex.Message}";
+            Variables = new List<Dictionary<string, object>>();
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+
+    private async Task CrearNuevoVariable()
+    {
+        var nuevaEntidad = new Dictionary<string, object>
+        {
+            {"nombre", nombreVariable},
+            {"fechacreacion", DateTime.Now},
+            {"fkemailusuario",fkemailusuarioVariable }
+        };
+        bool creado = await servicioEntidad.CrearAsync(PROYECTO, TABLA, nuevaEntidad);
+        if (creado)
+        {
+            nombreVariable = "";
+            fechacreacionVariable = DateTime.MinValue;
+            fkemailusuarioVariable = "";
+            mostrarFormularioCrear = false;
+            await CargarVariables();
+        }
+        else
+        {
+            errorMensaje = "Error al crear el Variable.";
+        }
+    }
+
+    private void MostrarFormularioCrear()
+    {
+        mostrarFormularioCrear = true;
+        mostrarFormularioEditar = false;
+    }
+
+    private void MostrarFormularioEditar(Dictionary<string, object> Variable)
+    {
+        idVariable =ObtenerValor(Variable, "id");
+        nombreVariable = ObtenerValor(Variable, "nombre");
+        fkemailusuarioVariable = ObtenerValor(Variable, "fkemailusuario");
+        mostrarFormularioEditar = true;
+        mostrarFormularioCrear = false;
+    }
+
+    private async Task ActualizarVariable()
+    {
+        var entidadActualizada = new Dictionary<string, object>
+        {
+            {"nombre", nombreVariable},
+            {"fkemailusuario",fkemailusuarioVariable }
+        };
+        bool actualizado = await servicioEntidad.ActualizarAsync(PROYECTO, TABLA, "id", idVariable, entidadActualizada);
+        if (actualizado)
+        {
+            idVariable ="";
+            nombreVariable ="";
+            fkemailusuarioVariable = "";
+            mostrarFormularioEditar = false;
+            await CargarVariables();
+        }
+        else
+        {
+            errorMensaje = "Error al actualizar el Variable.";
+        }
+    }
+
+    private async Task EliminarVariable(Dictionary<string, object> Variable)
+    {
+        string claveEliminar = ObtenerValor(Variable, "id");
+        if (!await ConfirmarEliminacion(claveEliminar))
+        {
+            return; // Si el usuario cancela, no se realizara la eliminacion
+        }
+        bool eliminado = await servicioEntidad.EliminarAsync(PROYECTO, TABLA, "id", claveEliminar);
+        if (eliminado)
+        {
+            await CargarVariables(); // Funcion para recargar la pagina y consultas
+        }
+        else
+        {
+            errorMensaje = "Error al eliminar el Variable.";
+        }
+    }
+
+    private async Task<bool> ConfirmarEliminacion(string nombre)
+    {
+        return await JS.InvokeAsync<bool>("confirm", $"¿Estás seguro de que quieres eliminar '{nombre}'?");
+    }
+
+    private void CancelarFormulario()
+    {
+        idVariable = "";
+        nombreVariable = "";
+        fechacreacionVariable = DateTime.MinValue;
+        fkemailusuarioVariable = "";
+    }
+
+    private string ObtenerValor(Dictionary<string, object> diccionario, string clave)
+    {
+        if (diccionario == null) return string.Empty;
+        return diccionario.TryGetValue(clave, out var valor) ? valor?.ToString() ?? string.Empty : string.Empty;
+    }
+}
