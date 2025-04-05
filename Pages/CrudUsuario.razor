@@ -18,11 +18,28 @@
 {
     <div class="card p-3 mb-3">
         <h5>Nuevo Usuario</h5>
-        <label>email:</label>
+        <label>Email:</label>
         <input @bind="emailUsuario" class="form-contUsuario" placeholder="Ingrese el email del Usuario" />
-        <label>contrasena:</label>
+        <label>Contraseña:</label>
         <input @bind="contrasenaUsuario" class="form-contUsuario" placeholder="Ingrese la contraseña del usuario" />
-        <button class="btn btn-success mt-2" @onclick="CrearNuevoUsuario">Guardar</button>
+        <label>Roles:</label>
+        <select class="form-control" @bind="CodigoRolAgregar">
+                                    @foreach (var v in Roles)
+                                    {
+                                        <option value="@ObtenerValor(v, "id")">@ObtenerValor(v, "nombre")</option>
+                                    }
+         </select>
+        <button class="btn btn-primary mt-2" @onclick="AgregarRol">Agregar</button>
+        <ul class="list-group">
+                            @foreach (var item in RolesUsuariosAgregados)
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    @item["fkidrol"] 
+                                    <button type="button" class="btn btn-sm btn-danger" @onclick="() => EliminarRol(item)">Eliminar</button>
+                                </li>
+                            }
+        </ul>
+        <button class="btn btn-success mt-2" @onclick="GuardarUsuario">Guardar</button>
         <button class="btn btn-secondary mt-2" @onclick="CancelarFormulario">Cancelar</button>
     </div>
 }
@@ -32,10 +49,27 @@
     <div class="card p-3 mb-3">
         <h5>Editar Usuario</h5>
         <label>Nuevo email:</label>
-        <input @bind="emailUsuario" class="form-contUsuario" placeholder="Ingrese el nuevo email" />
-        <label>Nueva contraseña:</label>
-        <input @bind="contrasenaUsuario" class="form-contUsuario" placeholder="Ingrese la nueva contraseña" />
-        <button class="btn btn-warning mt-2" @onclick="ActualizarUsuario">Actualizar</button>
+        <input @bind="emailUsuario" class="form-contUsuario" placeholder="Ingrese el email del Usuario" />
+        <label>Contraseña:</label>
+        <input @bind="contrasenaUsuario" class="form-contUsuario" placeholder="Ingrese la contraseña del usuario" />
+        <label>Roles:</label>
+        <select class="form-control" @bind="CodigoRolAgregar">
+                                    @foreach (var v in Roles)
+                                    {
+                                        <option value="@ObtenerValor(v, "id")">@ObtenerValor(v, "nombre")</option>
+                                    }
+         </select>
+        <button class="btn btn-primary mt-2" @onclick="AgregarRol">Agregar</button>
+        <ul class="list-group">
+                            @foreach (var item in RolesUsuariosAgregados)
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    @item["fkidrol"] 
+                                    <button type="button" class="btn btn-sm btn-danger" @onclick="() => EliminarRol(item)">Eliminar</button>
+                                </li>
+                            }
+        </ul>
+        <button class="btn btn-success mt-2" @onclick="EditarUsuario">Guardar</button>
         <button class="btn btn-secondary mt-2" @onclick="CancelarFormulario">Cancelar</button>
     </div>
 }
@@ -67,7 +101,7 @@ else
                         <td>@ObtenerValor(Usuario, "contrasena")</td>
                         <td>
                             <button class="btn btn-warning btn-sm" @onclick="() => MostrarFormularioEditar(Usuario)">Editar</button>
-                            <button class="btn btn-danger btn-sm" @onclick="() => EliminarUsuario(Usuario)">Eliminar</button>
+                            <button class="btn btn-danger btn-sm" @onclick="() => DropUsuario(Usuario)">Eliminar</button>
                         </td>
                     </tr>
                 }
@@ -86,7 +120,8 @@ else
 @code {
     private List<Dictionary<string, object>> Usuarios = new List<Dictionary<string, object>>();
     private List<Dictionary<string, object>> Roles = new List<Dictionary<string, object>>();
-    private List<Dictionary<string, object>> RoleUsuarios = new List<Dictionary<string, object>>();
+    private List<Dictionary<string, object>> RolesUsuarios = new List<Dictionary<string, object>>();
+    private List<Dictionary<string, object>> RolesUsuariosAgregados = new List<Dictionary<string, object>>();
 
     private bool cargando = true;
 
@@ -101,6 +136,7 @@ else
 
     private string emailUsuario = "";
     private string contrasenaUsuario = "";
+    private string CodigoRolAgregar = "";
 
 
     // Variables para el formulario de edición
@@ -110,10 +146,15 @@ else
     {
         await CargarUsuarios();
         await CargarRol();
+        await CargarRolesUsuarios();
     }
     private async Task CargarRol()
     {
         Roles = await servicioEntidad.ObtenerTodosAsync(PROYECTO, "rol") ?? new();
+    }
+    private async Task CargarRolesUsuarios()
+    {
+        RolesUsuarios = await servicioEntidad.ObtenerTodosAsync(PROYECTO, "rol_usuario") ?? new();
     }
 
     private async Task CargarUsuarios()
@@ -136,26 +177,6 @@ else
         }
     }
 
-    private async Task CrearNuevoUsuario()
-    {
-        var nuevaEntidad = new Dictionary<string, object>
-        {
-            { "email", emailUsuario },
-            { "contrasena", contrasenaUsuario}
-        };
-        bool creado = await servicioEntidad.CrearAsync(PROYECTO, TABLA, nuevaEntidad);
-        if (creado)
-        {
-            emailUsuario = "";
-            contrasenaUsuario = "";
-            mostrarFormularioCrear = false;
-            await CargarUsuarios();
-        }
-        else
-        {
-            errorMensaje = "Error al crear el Usuario.";
-        }
-    }
 
     private void MostrarFormularioCrear()
     {
@@ -167,28 +188,20 @@ else
     {
         emailUsuario = ObtenerValor(Usuario, "email");
         contrasenaUsuario = ObtenerValor(Usuario, "contrasena");
+        foreach (var v in RolesUsuarios)
+            {   
+                if (ObtenerValor(v,"fkemail") == emailUsuario){
+                    RolesUsuariosAgregados.Add(new Dictionary<string, object>
+                    {
+                        { "fkidrol", ObtenerValor(v,"fkidrol") }
+                    });
+                }
+            }
         mostrarFormularioEditar = true;
         mostrarFormularioCrear = false;
     }
 
-    private async Task ActualizarUsuario()
-    {
-        var entidadActualizada = new Dictionary<string, object>
-        {
-            { "email", emailUsuario },
-            { "contrasena", contrasenaUsuario}
-        };
-        bool actualizado = await servicioEntidad.ActualizarAsync(PROYECTO, TABLA, "email", emailUsuario, entidadActualizada);
-        if (actualizado)
-        {
-            mostrarFormularioEditar = false;
-            await CargarUsuarios();
-        }
-        else
-        {
-            errorMensaje = "Error al actualizar el Usuario.";
-        }
-    }
+    
 
     private async Task EliminarUsuario(Dictionary<string, object> Usuario)
     {
@@ -219,37 +232,123 @@ else
         mostrarFormularioEditar = false;
         emailUsuario = "";
         contrasenaUsuario = "";
+        RolesUsuariosAgregados.Clear();
     }
 
-    private async Task GuardarFactura()
-{
-    try
+    private async Task GuardarUsuario()
     {
-        var parametros = new Dictionary<string, object>
+        try
         {
-            { "email", emailUsuario },
-            { "contrasena", contrasenaUsuario },
-            { "roles", RoleUsuarios } // ← Aquí está el cambio
-        };
+            var parametros = new Dictionary<string, object>
+            {
+                { "email", emailUsuario },
+                { "contrasena", contrasenaUsuario },
+                { "roles", RolesUsuariosAgregados } // ← Aquí está el cambio
+            };
 
-        var respuesta = await servicioEntidad.EjecutarProcedimientoAsync(
-            "proyecto",
-            "factura",
-            "insertar_usuario_y_roles",
-            parametros
-        );
+            var respuesta = await servicioEntidad.EjecutarProcedimientoAsync(
+                "proyecto",
+                "factura",
+                "insertar_usuario_y_roles",
+                parametros
+            );
 
-        if (respuesta != null)
+            if (respuesta != null)
+            {
+                emailUsuario = "";
+                contrasenaUsuario = "";
+                RolesUsuariosAgregados.Clear();
+                mostrarFormularioCrear = false;
+                await CargarUsuarios();
+            }
+        }
+        catch (Exception ex)
         {
-            await CargarUsuarios();
+            Console.WriteLine($"Error al guardar usuario: {ex.Message}");
         }
     }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Error al guardar factura: {ex.Message}");
-    }
-}
 
+    private async Task EditarUsuario()
+    {
+        try
+        {
+            var parametros = new Dictionary<string, object>
+            {
+                { "email", emailUsuario },
+                { "contrasena", contrasenaUsuario },
+                { "roles", RolesUsuariosAgregados } // ← Aquí está el cambio
+            };
+
+            var respuesta = await servicioEntidad.EjecutarProcedimientoAsync(
+                "proyecto",
+                "factura",
+                "editar_usuario_y_roles",
+                parametros
+            );
+
+            if (respuesta != null)
+            {
+                emailUsuario = "";
+                contrasenaUsuario = "";
+                RolesUsuariosAgregados.Clear();
+                mostrarFormularioEditar = false;
+                await CargarUsuarios();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al guardar usuario: {ex.Message}");
+        }
+    }
+
+    private void AgregarRol()
+    {
+        if (!string.IsNullOrWhiteSpace(CodigoRolAgregar))
+        {
+            RolesUsuariosAgregados.Add(new Dictionary<string, object>
+            {
+                { "fkidrol", CodigoRolAgregar }
+            });
+
+            CodigoRolAgregar = "";
+        }
+    }
+    private void EliminarRol(Dictionary<string, object> producto)
+    {
+        RolesUsuariosAgregados.Remove(producto);
+    }
+
+    
+    private async Task DropUsuario(Dictionary<string, object> Usuario)
+    {
+        try
+        {
+            if (!await ConfirmarEliminacion(ObtenerValor(Usuario, "email")))
+            {
+                return; // Si el usuario cancela, no se realizara la eliminacion
+            }
+            var parametros = new Dictionary<string, object>
+            {
+                { "email", ObtenerValor(Usuario, "email") }
+            };
+
+            var respuesta = await servicioEntidad.EjecutarProcedimientoAsync(
+                "proyecto",
+                "factura",
+                "elimiar_usuario_y_roles",
+                parametros
+            );
+
+            if (respuesta != null)
+            {
+                await CargarUsuarios();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al eliminar usuario: {ex.Message}");
+        }
+    }
     private string ObtenerValor(Dictionary<string, object> diccionario, string clave)
     {
         if (diccionario == null) return string.Empty;
