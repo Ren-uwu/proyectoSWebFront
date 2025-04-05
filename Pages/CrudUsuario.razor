@@ -201,26 +201,6 @@ else
         mostrarFormularioCrear = false;
     }
 
-    
-
-    private async Task EliminarUsuario(Dictionary<string, object> Usuario)
-    {
-        string claveEliminar = ObtenerValor(Usuario, "email");
-        if (!await ConfirmarEliminacion(claveEliminar))
-        {
-            return; // Si el usuario cancela, no se realizara la eliminacion
-        }
-        bool eliminado = await servicioEntidad.EliminarAsync(PROYECTO, TABLA, "email", claveEliminar);
-        if (eliminado)
-        {
-            await CargarUsuarios(); // Funcion para recargar la pagina y consultas
-        }
-        else
-        {
-            errorMensaje = "Error al eliminar el Usuario.";
-        }
-    }
-
     private async Task<bool> ConfirmarEliminacion(string email)
     {
         return await JS.InvokeAsync<bool>("confirm", $"¿Estás seguro de que quieres eliminar '{email}'?");
@@ -260,6 +240,7 @@ else
                 RolesUsuariosAgregados.Clear();
                 mostrarFormularioCrear = false;
                 await CargarUsuarios();
+                await CargarRolesUsuarios();
             }
         }
         catch (Exception ex)
@@ -293,6 +274,7 @@ else
                 RolesUsuariosAgregados.Clear();
                 mostrarFormularioEditar = false;
                 await CargarUsuarios();
+                await CargarRolesUsuarios();
             }
         }
         catch (Exception ex)
@@ -342,6 +324,7 @@ else
             if (respuesta != null)
             {
                 await CargarUsuarios();
+                await CargarRolesUsuarios();
             }
         }
         catch (Exception ex)
