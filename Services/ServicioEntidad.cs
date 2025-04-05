@@ -157,7 +157,6 @@ namespace ProyectoSWebfront.Services
                 return false;
             }
         }
-
         public async Task<List<Dictionary<string, object>>?> EjecutarProcedimientoAsync(
             string nombreProyecto,
             string nombreTabla,

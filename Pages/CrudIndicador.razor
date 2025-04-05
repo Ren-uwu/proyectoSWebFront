@@ -1,0 +1,988 @@
+﻿@page "/indicador"
+@using System.Collections.Generic
+@using System.Text.Json
+@using Services
+@inject ServicioEntidad servicioEntidad
+@inject NavigationManager navegacionManager
+@inject IJSRuntime JS
+
+<PageTitle>Lista de indicadores</PageTitle>
+
+<h1>Indicadores</h1>
+
+<div class="mb-3">
+    <button class="btn btn-primary" @onclick="MostrarFormularioCrear">Crear Nuevo</button>
+</div>
+
+@if (mostrarFormularioCrear)
+{
+    <div class="card p-3 mb-3">
+        <form>
+            <h5>Nuevo Indicardor</h5>
+            <label>Codigo:</label>
+            <input @bind="codigoIndicador" class="form-contFuente" placeholder="Ingrese el codigo del nuevo indicador" />
+            <label>Nombre:</label>
+            <input @bind="nombreIndicador" class="form-contFuente" placeholder="Ingrese el nombre del nuevo indicador" />
+            <label>Objetivo:</label>
+            <input @bind="objetivoIndicador" class="form-contFuente" placeholder="Ingrese el objetivo del nuevo indicador" />
+            <label>Alcance:</label>
+            <input @bind="alcanceIndicador" class="form-contFuente" placeholder="Ingrese el alcance del nuevo indicador" />
+            <label>formula:</label>
+            <input @bind="formulaIndicador" class="form-contFuente" placeholder="Ingrese la formula del nuevo indicador" />
+            <label>Meta:</label>
+            <input @bind="metaIndicador" class="form-contFuente" placeholder="Ingrese la meta del nuevo indicador" />
+            <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+            <div class="form-group">
+                <label>Tipo Indicador</label>
+                <select class="form-control" @bind="fkidtipoindicador">
+                    <option value="0">Seleccione un tipo de indicador</option>
+                    @foreach (var t in TipoIndicador)
+                    {
+                        <option value="@ObtenerValor(t, "id")">@ObtenerNombreTipoDesdeEntidad(t)</option>
+                    }
+                </select>
+            </div>
+                <div class="form-group">
+                    <label>Unidad Medicion</label>
+                    <select class="form-control" @bind="fkidunidadmedicion">
+                        <option value="0">Seleccione una unidad de medicion</option>
+                        @foreach (var U in UnidadMedicion)
+                        {
+                            <option value="@ObtenerValor(U, "id")">@ObtenerNombreUnidadDesdeEntidad(U)</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Sentido</label>
+                    <select class="form-control" @bind="fkidsentido">
+                        <option value="0">Seleccione un sentido</option>
+                        @foreach (var S in Sentido)
+                        {
+                            <option value="@ObtenerValor(S, "id")">@ObtenerNombreSentidoDesdeEntidad(S)</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Frecuencia</label>
+                    <select class="form-control" @bind="fkidfrecuencia">
+                        <option value="0">Seleccione una frecuencia</option>
+                        @foreach (var F in Frecuencia)
+                        {
+                            <option value="@ObtenerValor(F, "id")">@ObtenerNombreFrecuenciaDesdeEntidad(F)</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Articulo</label>
+                    <select class="form-control" @bind="fkidarticulo">
+                        <option value="0">Seleccione un articulo</option>
+                        @foreach (var A in Articulo)
+                        {
+                            <option value="@ObtenerValor(A, "id")">@ObtenerNombreArticuloDesdeEntidad(A)</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Literal</label>
+                    <select class="form-control" @bind="fkidliteral">
+                        <option value="0">Seleccione un literal</option>
+                        @foreach (var L in Literal)
+                        {
+                            <option value="@ObtenerValor(L, "id")">@ObtenerNombreLiteralDesdeEntidad(L)</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Numeral</label>
+                    <select class="form-control" @bind="fkidnumeral">
+                        <option value="0">Seleccione un numeral</option>
+                        @foreach (var N in Numeral)
+                        {
+                            <option value="@ObtenerValor(N, "id")">@ObtenerNombreNumeralDesdeEntidad(N)</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Paragrafo</label>
+                    <select class="form-control" @bind="fkidparagrafo">
+                        <option value="0">Seleccione un paragrafo</option>
+                        @foreach (var P in Paragrafo)
+                        {
+                            <option value="@ObtenerValor(P, "id")">@ObtenerNombreParagrafoDesdeEntidad(P)</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Actor</label>
+                    <select class="form-control" @bind="fkidresponsable">
+                        <option value="0">Seleccione un actor</option>
+                        @foreach (var A in Actor)
+                        {
+                            <option value="@ObtenerValor(A, "id")">@ObtenerNombreActorDesdeEntidad(A)</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Representacion Visual</label>
+                    <select class="form-control" @bind="fkidrepresenvisual">
+                        <option value="0">Seleccione una representacion visual</option>
+                        @foreach (var R in RepresenVisual)
+                        {
+                            <option value="@ObtenerValor(R, "id")">@ObtenerNombreRepresenDesdeEntidad(R)</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Fuente</label>
+                    <select class="form-control" @bind="fkidfuente">
+                        <option value="0">Seleccione una fuente</option>
+                        @foreach (var F in Fuente)
+                        {
+                            <option value="@ObtenerValor(F, "id")">@ObtenerNombreFuentesDesdeEntidad(F)</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Variable</label>
+                    <select class="form-control" @bind="fkidvariable">
+                        <option value="0">Seleccione una variable</option>
+                        @foreach (var V in Variable)
+                        {
+                            <option value="@ObtenerValor(V, "id")">@ObtenerNombreVariableDesdeEntidad(V)</option>
+                        }
+                    </select>
+                </div>
+                <label>Dato:</label>
+                <input @bind="dato" class="form-contFuente" placeholder="Ingrese el dato de la variable para el nuevo indicador" />
+                <div class="form-group">
+                    <label>Usuario</label>
+                    <select class="form-control" @bind="fkemailusuario">
+                        <option value="0">Seleccione un usuario</option>
+                        @foreach (var U in Usuario)
+                        {
+                            <option value="@ObtenerValor(U, "email")">@ObtenerNombreUsuarioDesdeEntidad(U)</option>
+                        }
+                    </select>
+                </div>
+                <label>Resultado:</label>
+                <input @bind="resultado" class="form-contFuente" placeholder="Ingrese el resultado del nuevo indicador" />
+                <div class="col-auto">
+                    <button type="button" class="btn btn-primary" @onclick="Agregar">Agregar</button>
+                </div>
+            <hr />
+             </div>
+             <div class="modal-footer">
+                <button class="btn btn-success mt-2" @onclick="CrearNuevoIndicador">Guardar</button>
+                <button class="btn btn-secondary mt-2" @onclick="CancelarFormulario">Cancelar</button>
+             </div>
+        </form>
+    </div>
+}
+
+@if (mostrarFormularioEditar)
+{
+    <div class="card p-3 imb-3">
+        <form>
+            <h5>Nuevo Indicardor</h5>
+            <label>Nuevo Codigo:</label>
+            <input @bind="codigoIndicador" class="form-contFuente"/>
+            <label>Nuevo Nombre:</label>
+            <input @bind="nombreIndicador" class="form-contFuente"/>
+            <label>Nuevo Objetivo:</label>
+            <input @bind="objetivoIndicador" class="form-contFuente"/>
+            <label>Nuevo Alcance:</label>
+            <input @bind="alcanceIndicador" class="form-contFuente"/>
+            <label>Nueva formula:</label>
+            <input @bind="formulaIndicador" class="form-contFuente"/>
+            <label>Nueva Meta:</label>
+            <input @bind="metaIndicador" class="form-contFuente"/>
+            <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                <div class="form-group">
+                    <label>Nuevo Tipo Indicador</label>
+                    <select class="form-control" @bind="fkidtipoindicador">
+                        <option value="0">Seleccione un tipo de indicador</option>
+                        @foreach (var t in TipoIndicador)
+                        {
+                            <option value="@ObtenerValor(t, "id")">@ObtenerNombreTipoDesdeEntidad(t)</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Nueva Unidad Medicion</label>
+                    <select class="form-control" @bind="fkidunidadmedicion">
+                        <option value="0">Seleccione una unidad de medicion</option>
+                        @foreach (var U in UnidadMedicion)
+                        {
+                            <option value="@ObtenerValor(U, "id")">@ObtenerNombreUnidadDesdeEntidad(U)</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Nuevo Sentido</label>
+                    <select class="form-control" @bind="fkidsentido">
+                        <option value="0">Seleccione un sentido</option>
+                        @foreach (var S in Sentido)
+                        {
+                            <option value="@ObtenerValor(S, "id")">@ObtenerNombreSentidoDesdeEntidad(S)</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Nueva Frecuencia</label>
+                    <select class="form-control" @bind="fkidfrecuencia">
+                        <option value="0">Seleccione una frecuencia</option>
+                        @foreach (var F in Frecuencia)
+                        {
+                            <option value="@ObtenerValor(F, "id")">@ObtenerNombreFrecuenciaDesdeEntidad(F)</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Nuevo Articulo</label>
+                    <select class="form-control" @bind="fkidarticulo">
+                        <option value="0">Seleccione un articulo</option>
+                        @foreach (var A in Articulo)
+                        {
+                            <option value="@ObtenerValor(A, "id")">@ObtenerNombreArticuloDesdeEntidad(A)</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Nuevo Literal</label>
+                    <select class="form-control" @bind="fkidliteral">
+                        <option value="0">Seleccione un literal</option>
+                        @foreach (var L in Literal)
+                        {
+                            <option value="@ObtenerValor(L, "id")">@ObtenerNombreLiteralDesdeEntidad(L)</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Nuevo Numeral</label>
+                    <select class="form-control" @bind="fkidnumeral">
+                        <option value="0">Seleccione un numeral</option>
+                        @foreach (var N in Numeral)
+                        {
+                            <option value="@ObtenerValor(N, "id")">@ObtenerNombreNumeralDesdeEntidad(N)</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Nuevo Paragrafo</label>
+                    <select class="form-control" @bind="fkidparagrafo">
+                        <option value="0">Seleccione un paragrafo</option>
+                        @foreach (var P in Paragrafo)
+                        {
+                            <option value="@ObtenerValor(P, "id")">@ObtenerNombreParagrafoDesdeEntidad(P)</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Nuevo Actor</label>
+                    <select class="form-control" @bind="fkidresponsable">
+                        <option value="0">Seleccione un actor</option>
+                        @foreach (var A in Actor)
+                        {
+                            <option value="@ObtenerValor(A, "id")">@ObtenerNombreActorDesdeEntidad(A)</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Nueva Representacion Visual</label>
+                    <select class="form-control" @bind="fkidrepresenvisual">
+                        <option value="0">Seleccione una representacion visual</option>
+                        @foreach (var R in RepresenVisual)
+                        {
+                            <option value="@ObtenerValor(R, "id")">@ObtenerNombreRepresenDesdeEntidad(R)</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Nueva Fuente</label>
+                    <select class="form-control" @bind="fkidfuente">
+                        <option value="0">Seleccione una fuente</option>
+                        @foreach (var F in Fuente)
+                        {
+                            <option value="@ObtenerValor(F, "id")">@ObtenerNombreFuentesDesdeEntidad(F)</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Nueva Variable</label>
+                    <select class="form-control" @bind="fkidvariable">
+                        <option value="0">Seleccione una variable</option>
+                        @foreach (var V in Variable)
+                        {
+                            <option value="@ObtenerValor(V, "id")">@ObtenerNombreVariableDesdeEntidad(V)</option>
+                        }
+                    </select>
+                </div>
+                <label>Nuevo Dato:</label>
+                <input @bind="dato" class="form-contFuente"/>
+                <div class="form-group">
+                    <label>Nuevo Usuario</label>
+                    <select class="form-control" @bind="fkemailusuario">
+                        <option value="0">Seleccione un usuario</option>
+                        @foreach (var U in Usuario)
+                        {
+                            <option value="@ObtenerValor(U, "email")">@ObtenerNombreUsuarioDesdeEntidad(U)</option>
+                        }
+                    </select>
+                </div>
+                <label>Nuevo Resultado:</label>
+                <input @bind="resultado" class="form-contFuente"/>
+                <div class="col-auto">
+                    <button type="button" class="btn btn-primary" @onclick="Agregar">Agregar</button>
+                </div>
+                <hr />
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-success mt-2" @onclick="ActualizarIndicador">Actualizar</button>
+                <button class="btn btn-secondary mt-2" @onclick="CancelarFormulario">Cancelar</button>
+            </div>
+        </form>
+    </div>
+}
+
+@if (cargando)
+{
+    <p><em>Cargando...</em></p>
+}
+else if (Indicadores == null || Indicadores.Count == 0)
+{
+    <p>No hay indicadores disponibles.</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Codigo</th>
+                    <th>Nombre</th>
+                    <th>Objetivo</th>
+                    <th>Alcance</th>
+                    <th>Formula</th>
+                    <th>Id Tipo Indicador</th>
+                    <th>Id Unidad Medicion</th>
+                    <th>Meta</th>
+                    <th>Id Sentido</th>
+                    <th>Id Frecuencia</th>
+                    <th>Id Articulo</th>
+                    <th>Id Literal</th>
+                    <th>Id Numeral</th>
+                    <th>Id Paragrafo</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var indicador in Indicadores)
+                {
+                    <tr>
+                        <td>@ObtenerValor(indicador, "codigo")</td>
+                        <td>@ObtenerValor(indicador, "nombre")</td>
+                        <td>@ObtenerValor(indicador, "objetivo")</td>
+                        <td>@ObtenerValor(indicador, "alcance")</td>
+                        <td>@ObtenerValor(indicador, "formula")</td>
+                        <td>@ObtenerValor(indicador, "fkidtipoindicador")</td>
+                        <td>@ObtenerValor(indicador, "fkidunidadmedicion")</td>
+                        <td>@ObtenerValor(indicador, "meta")</td>
+                        <td>@ObtenerValor(indicador, "fkidsentido")</td>
+                        <td>@ObtenerValor(indicador, "fkidfrecuencia")</td>
+                        <td>@ObtenerValor(indicador, "fkidarticulo")</td>
+                        <td>@ObtenerValor(indicador, "fkidliteral")</td>
+                        <td>@ObtenerValor(indicador, "fkidnumeral")</td>
+                        <td>@ObtenerValor(indicador, "fkidparagrafo")</td>
+                        <td>
+                            <button class="btn btn-warning btn-sm" @onclick="() => MostrarFormularioEditar(indicador)">Editar</button>
+                            <button class="btn btn-danger btn-sm" @onclick="() => EliminarIndicador(indicador)">Eliminar</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@if (errorMensaje != null)
+{
+    <div class="alert alert-danger">
+        Error: @errorMensaje
+    </div>
+}
+
+@code {
+    private List<Dictionary<string, object>> Indicadores = new List<Dictionary<string, object>>();
+
+    private List<Dictionary<string, object>> TipoIndicador = new List<Dictionary<string, object>>();
+
+    private List<Dictionary<string, object>> UnidadMedicion = new List<Dictionary<string, object>>();
+
+    private List<Dictionary<string, object>> Sentido = new List<Dictionary<string, object>>();
+
+    private List<Dictionary<string, object>> Frecuencia = new List<Dictionary<string, object>>();
+
+    private List<Dictionary<string, object>> Articulo = new List<Dictionary<string, object>>();
+
+    private List<Dictionary<string, object>> Literal = new List<Dictionary<string, object>>();
+
+    private List<Dictionary<string, object>> Numeral = new List<Dictionary<string, object>>();
+
+    private List<Dictionary<string, object>> Paragrafo = new List<Dictionary<string, object>>();
+
+    // Aqui van las listas de las tablas que llevan sp
+
+    private List<Dictionary<string, object>> Actor = new List<Dictionary<string, object>>();
+
+    private List<Dictionary<string, object>> RepresenVisual = new List<Dictionary<string, object>>();
+
+    private List<Dictionary<string, object>> Fuente = new List<Dictionary<string, object>>();
+
+    private List<Dictionary<string, object>> Variable = new List<Dictionary<string, object>>();
+
+    private List<Dictionary<string, object>> Usuario = new List<Dictionary<string, object>>();
+
+    private bool cargando = true;
+
+    private string? errorMensaje = null;
+
+    private const string PROYECTO = "Trabajo";
+
+    private const string TABLA = "indicador";
+
+    private string idIndicador = "";
+
+    private string codigoIndicador = "";
+
+    private string nombreIndicador = "";
+
+    private string objetivoIndicador = "";
+
+    private string alcanceIndicador = "";
+
+    private string formulaIndicador = "";
+
+    private string metaIndicador = "";
+
+    private string fkidtipoindicador = "";
+
+    private string fkidunidadmedicion = "";
+
+    private string fkidsentido = "";
+
+    private string fkidfrecuencia = "";
+
+    private string fkidarticulo = "";
+
+    private string fkidliteral = "";
+
+    private string fkidnumeral = "";
+
+    private string fkidparagrafo = "";
+
+    private bool mostrarFormularioCrear = false;
+
+    private bool mostrarFormularioEditar = false;
+
+    // Aqui van las variables de los sp
+
+    private string fkidrepresenvisual = "";
+
+    private string fkidresponsable = "";
+
+    private string fkidfuente = "";
+
+    private string fkidvariable = "";
+
+    private string fkemailusuario= "";
+
+    private double dato = 0;
+
+    private double resultado = 0;
+
+    // listas para los JSON
+
+    private List<Dictionary<string, object>> ResponsableIndicador = new List<Dictionary<string, object>>();
+
+    private List<Dictionary<string, object>> RepresenIndicador = new List<Dictionary<string, object>>();
+
+    private List<Dictionary<string, object>> VariableIndicador = new List<Dictionary<string, object>>();
+
+    private List<Dictionary<string, object>> ResultadoIndicador = new List<Dictionary<string, object>>();
+
+    private List<Dictionary<string, object>> FuenteIndicador = new List<Dictionary<string, object>>();
+
+    //Listas para el update 
+
+    private List<Dictionary<string, object>> represenvisualporindicador = new List<Dictionary<string, object>>();
+
+    private List<Dictionary<string, object>> responsablesporindicador = new List<Dictionary<string, object>>();
+
+    private List<Dictionary<string, object>> fuentesporindicador = new List<Dictionary<string, object>>();
+
+    private List<Dictionary<string, object>> variablesporindicador = new List<Dictionary<string, object>>();
+
+    private List<Dictionary<string, object>> resultadoporindicador = new List<Dictionary<string, object>>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarIndicadores();
+        await CargarTodos();
+    }
+
+    private async Task CargarIndicadores()
+    {
+        cargando = true;
+        errorMensaje = null;
+        try
+        {
+            var resultado = await servicioEntidad.ObtenerTodosAsync(PROYECTO, TABLA);
+            Indicadores = resultado ?? new List<Dictionary<string, object>>();
+        }
+        catch (Exception ex)
+        {
+            errorMensaje = $"Error al cargar indicador: {ex.Message}";
+            Indicadores = new List<Dictionary<string, object>>();
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+    private async Task CargarTodos()
+    {
+        try
+        {
+            TipoIndicador = await servicioEntidad.ObtenerTodosAsync("Trabajo", "tipoindicador") ?? new();
+            UnidadMedicion = await servicioEntidad.ObtenerTodosAsync("Trabajo", "unidadmedicion") ?? new();
+            Sentido = await servicioEntidad.ObtenerTodosAsync("Trabajo", "sentido") ?? new();
+            Frecuencia = await servicioEntidad.ObtenerTodosAsync("Trabajo", "frecuencia") ?? new();
+            Articulo = await servicioEntidad.ObtenerTodosAsync("Trabajo", "articulo") ?? new();
+            Literal = await servicioEntidad.ObtenerTodosAsync("Trabajo", "literal") ?? new();
+            Numeral = await servicioEntidad.ObtenerTodosAsync("Trabajo", "numeral") ?? new();
+            Paragrafo = await servicioEntidad.ObtenerTodosAsync("Trabajo", "paragrafo") ?? new();
+            Actor = await servicioEntidad.ObtenerTodosAsync("Trabajo", "actor") ?? new();
+            RepresenVisual = await servicioEntidad.ObtenerTodosAsync("Trabajo", "represenvisual") ?? new();
+            Fuente = await servicioEntidad.ObtenerTodosAsync("Trabajo", "fuente") ?? new();
+            Variable = await servicioEntidad.ObtenerTodosAsync("Trabajo", "variable") ?? new();
+            Usuario = await servicioEntidad.ObtenerTodosAsync("Trabajo", "usuario") ?? new();
+            represenvisualporindicador = await servicioEntidad.ObtenerTodosAsync("Trabajo", "represenvisualporindicador") ?? new();
+            responsablesporindicador = await servicioEntidad.ObtenerTodosAsync("Trabajo", "responsablesporindicador") ?? new();
+            fuentesporindicador = await servicioEntidad.ObtenerTodosAsync("Trabajo", "fuentesporindicador") ?? new();
+            variablesporindicador = await servicioEntidad.ObtenerTodosAsync("Trabajo", "variablesporindicador") ?? new();
+            resultadoporindicador = await servicioEntidad.ObtenerTodosAsync("Trabajo", "resultadoporindicador") ?? new();
+        }
+        catch (Exception ex)
+        {
+            errorMensaje = $"Error al cargar productos: {ex.Message}";
+            //productos = new List<Dictionary<string, object>>();
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+    private void Agregar()
+    {
+        ResponsableIndicador.Add(new Dictionary<string, object>
+        {
+            { "fkidresponsable", fkidresponsable }
+        });
+        RepresenIndicador.Add(new Dictionary<string, object>
+        {
+            { "fkidrepresenvisual", fkidrepresenvisual }
+        });
+        VariableIndicador.Add(new Dictionary<string, object>
+        {
+            { "fkidvariable", fkidvariable },
+            { "dato", dato },
+            { "fkemailusuario", fkemailusuario }
+        });
+        ResultadoIndicador.Add(new Dictionary<string, object>
+        {
+            { "resultado", resultado }
+        });
+        FuenteIndicador.Add(new Dictionary<string, object>
+        {
+            { "fkidfuente", fkidfuente }
+        });
+
+        fkidresponsable = "";
+        fkidrepresenvisual = "";
+        fkidvariable = "";
+        dato = 0;
+        fkemailusuario = "";
+        resultado = 0;
+        fkidfuente = "";
+    }
+
+    private async Task CrearNuevoIndicador()
+    {
+        var nuevaEntidad = new Dictionary<string, object>
+        {
+            { "codigoIndicador", codigoIndicador },
+            { "nombreIndicador", nombreIndicador },
+            { "objetivoIndicador", objetivoIndicador },
+            { "alcanceIndicador", alcanceIndicador },
+            { "formulaIndicador", formulaIndicador },
+            { "metaIndicador", metaIndicador },
+            { "fkidtipoindicador", fkidtipoindicador },
+            { "fkidunidadmedicion", fkidunidadmedicion },
+            { "fkidsentido", fkidsentido },
+            { "fkidfrecuencia", fkidfrecuencia },
+            { "fkidarticulo", fkidarticulo },
+            { "fkidliteral", fkidliteral },
+            { "fkidnumeral", fkidnumeral },
+            { "fkidparagrafo", fkidparagrafo },
+            { "represenvisualporindicador", RepresenIndicador },
+            { "responsablesporindicador", ResponsableIndicador },
+            { "fuentesporindicador", FuenteIndicador },
+            { "variablesporindicador", VariableIndicador },
+            { "resultadoporindicador", ResultadoIndicador }
+        };
+        Console.WriteLine(JsonSerializer.Serialize(nuevaEntidad));
+        var creado = await servicioEntidad.EjecutarProcedimientoAsync(PROYECTO, TABLA, "insertar_indicador_tablas", nuevaEntidad);
+        if (creado != null)
+        {
+            idIndicador = "";
+            codigoIndicador = "";
+            nombreIndicador = "";
+            objetivoIndicador = "";            
+            alcanceIndicador = "";
+            formulaIndicador = "";
+            metaIndicador = "";
+            fkidtipoindicador = "";
+            fkidunidadmedicion = "";
+            fkidsentido = "";
+            fkidfrecuencia = "";
+            fkidarticulo = "";
+            fkidliteral = "";
+            fkidnumeral = "";
+            fkidparagrafo = "";
+            RepresenIndicador.Clear();
+            ResponsableIndicador.Clear();
+            FuenteIndicador.Clear();
+            VariableIndicador.Clear();
+            ResultadoIndicador.Clear();
+            mostrarFormularioCrear = false;
+            await CargarIndicadores();
+        }
+        else
+        {
+            errorMensaje = "Error al crear el Indicador.";
+        }
+    }
+
+    private void MostrarFormularioCrear()
+    {
+        mostrarFormularioCrear = true;
+        mostrarFormularioEditar = false;
+    }
+
+    private void MostrarFormularioEditar(Dictionary<string, object> indicador)
+    {
+        idIndicador = ObtenerValor(indicador, "id");
+        codigoIndicador = ObtenerValor(indicador, "codigo");
+        objetivoIndicador = ObtenerValor(indicador, "objetivo");
+        alcanceIndicador = ObtenerValor(indicador, "alcance");
+        formulaIndicador = ObtenerValor(indicador, "formula");
+        metaIndicador = ObtenerValor(indicador, "meta");
+        fkidtipoindicador = ObtenerValor(indicador, "fkidtipoindicador");
+        fkidunidadmedicion = ObtenerValor(indicador, "fkidunidadmedicion");
+        fkidsentido = ObtenerValor(indicador, "fkidsentido");
+        fkidfrecuencia = ObtenerValor(indicador, "fkidfrecuencia");
+        fkidarticulo = ObtenerValor(indicador, "fkidarticulo");
+        fkidliteral = ObtenerValor(indicador, "fkidliteral");
+        fkidnumeral = ObtenerValor(indicador, "fkidnumeral");
+        fkidparagrafo = ObtenerValor(indicador, "fkidparagrafo");
+        nombreIndicador = ObtenerValor(indicador, "nombre");
+
+        foreach (var v in responsablesporindicador)
+        {
+            if (ObtenerValor(v, "fkidindicador") == idIndicador)
+            {
+                fkidresponsable = ObtenerValor(v, "fkidresponsable");
+            }
+        }
+        foreach (var v in represenvisualporindicador)
+        {
+            if (ObtenerValor(v, "fkidindicador") == idIndicador)
+            {
+
+                fkidrepresenvisual = ObtenerValor(v, "fkidrepresenvisual");
+
+            }
+        }
+        foreach (var v in variablesporindicador)
+        {
+            if (ObtenerValor(v, "fkidindicador") == idIndicador)
+            {
+                fkidvariable = ObtenerValor(v, "fkidvariable");
+                dato = double.Parse(ObtenerValor(v, "dato"));
+                fkemailusuario = ObtenerValor(v, "fkemailusuario");
+            }
+        }
+        foreach (var v in resultadoporindicador)
+        {
+            if (ObtenerValor(v, "fkidindicador") == idIndicador)
+            {
+
+                resultado = double.Parse(ObtenerValor(v, "resultado"));
+
+            }
+        }
+        foreach (var v in fuentesporindicador)
+        {
+            if (ObtenerValor(v, "fkidindicador") == idIndicador)
+            {
+                fkidfuente = ObtenerValor(v, "fkidfuente");
+            }
+        }
+        mostrarFormularioEditar = true;
+        mostrarFormularioCrear = false;
+    }
+
+    private async Task ActualizarIndicador()
+    {
+        var entidadActualizada = new Dictionary<string, object>
+        {
+            {"fkidindicadores", idIndicador },
+            { "codigoIndicador", codigoIndicador },
+            { "nombreIndicador", nombreIndicador },
+            { "objetivoIndicador", objetivoIndicador },
+            { "alcanceIndicador", alcanceIndicador },
+            { "formulaIndicador", formulaIndicador },
+            { "metaIndicador", metaIndicador },
+            { "fkidtipoindicador", fkidtipoindicador },
+            { "fkidunidadmedicion", fkidunidadmedicion },
+            { "fkidsentido", fkidsentido },
+            { "fkidfrecuencia", fkidfrecuencia },
+            { "fkidarticulo", fkidarticulo },
+            { "fkidliteral", fkidliteral },
+            { "fkidnumeral", fkidnumeral },
+            { "fkidparagrafo", fkidparagrafo },
+            { "represenvisualporindicador", RepresenIndicador },
+            { "responsablesporindicador", ResponsableIndicador },
+            { "fuentesporindicador", FuenteIndicador },
+            { "variablesporindicador", VariableIndicador },
+            { "resultadoporindicador", ResultadoIndicador }
+        };
+        var actualizado = await servicioEntidad.EjecutarProcedimientoAsync(PROYECTO, TABLA, "actualizar_indicador_tablas", entidadActualizada);
+        if (actualizado != null)
+        {
+            idIndicador = "";
+            codigoIndicador = "";
+            nombreIndicador = "";
+            objetivoIndicador = "";
+            alcanceIndicador = "";
+            formulaIndicador = "";
+            metaIndicador = "";
+            fkidtipoindicador = "";
+            fkidunidadmedicion = "";
+            fkidsentido = "";
+            fkidfrecuencia = "";
+            fkidarticulo = "";
+            fkidliteral = "";
+            fkidnumeral = "";
+            fkidparagrafo = "";
+            RepresenIndicador.Clear();
+            ResponsableIndicador.Clear();
+            FuenteIndicador.Clear();
+            VariableIndicador.Clear();
+            ResultadoIndicador.Clear();
+            mostrarFormularioEditar = false;
+            await CargarIndicadores();
+        }
+        else
+        {
+            errorMensaje = "Error al actualizar el indicador.";
+        }
+    }
+
+    private async Task EliminarIndicador(Dictionary<string, object> indicador)
+    {
+        string idEliminar = ObtenerValor(indicador, "id");
+    string nombreEliminar = ObtenerValor(indicador, "nombre");
+
+    if (!await ConfirmarEliminacion(nombreEliminar))
+        return;
+
+    var entidadEliminada = new Dictionary<string, object>
+    {
+        { "fkidindicadores", idEliminar }
+    };
+
+    try
+    {
+        var eliminado = await servicioEntidad.EjecutarProcedimientoAsync(PROYECTO, TABLA, "eliminar_indicador_tablas", entidadEliminada);
+
+        if (eliminado != null)
+        {
+            await CargarIndicadores();
+        }
+        else
+        {
+            errorMensaje = "Error al eliminar el indicador.";
+        }
+    }
+    catch (Exception ex)
+    {
+        errorMensaje = $"Error inesperado: {ex.Message}";
+    }
+    }
+
+    private async Task<bool> ConfirmarEliminacion(string nombre)
+    {
+        return await JS.InvokeAsync<bool>("confirm", $"¿Estás seguro de que quieres eliminar '{nombre}'?");
+    }
+
+    private void CancelarFormulario()
+    {
+        mostrarFormularioCrear = false;
+        mostrarFormularioEditar = false;
+        idIndicador = "";
+        codigoIndicador = "";
+        nombreIndicador = "";
+        objetivoIndicador = "";
+        alcanceIndicador = "";
+        formulaIndicador = "";
+        metaIndicador = "";
+        fkidtipoindicador = "";
+        fkidunidadmedicion = "";
+        fkidsentido = "";
+        fkidfrecuencia = "";
+        fkidarticulo = "";
+        fkidliteral = "";
+        fkidnumeral = "";
+        fkidparagrafo = "";
+        RepresenIndicador.Clear();
+        ResponsableIndicador.Clear();
+        FuenteIndicador.Clear();
+        VariableIndicador.Clear();
+        ResultadoIndicador.Clear();
+    }
+
+    private string ObtenerValor(Dictionary<string, object> diccionario, string clave)
+    {
+        if (diccionario == null) return string.Empty;
+        return diccionario.TryGetValue(clave, out var valor) ? valor?.ToString() ?? string.Empty : string.Empty;
+    }
+
+    private string ObtenerNombreTipoDesdeEntidad(Dictionary<string, object> entidad)
+    {
+        if (entidad.TryGetValue("id", out var fkidtipoindicador))
+        {
+            var tipoindicador = TipoIndicador.FirstOrDefault(t => ObtenerValor(t, "id") == fkidtipoindicador?.ToString());
+            return tipoindicador != null ? ObtenerValor(tipoindicador, "nombre") : "(sin nombre)";
+        }
+        return "(sin tipo indicador)";
+    }
+    private string ObtenerNombreUnidadDesdeEntidad(Dictionary<string, object> entidad)
+    {
+        if (entidad.TryGetValue("id", out var fkiduniadadmedicion))
+        {
+            var unidadmedicion = UnidadMedicion.FirstOrDefault(t => ObtenerValor(t, "id") == fkiduniadadmedicion?.ToString());
+            return unidadmedicion != null ? ObtenerValor(unidadmedicion, "descripcion") : "(sin descripcion)";
+        }
+        return "(sin unidad de medicion)";
+    }
+    private string ObtenerNombreSentidoDesdeEntidad(Dictionary<string, object> entidad)
+    {
+        if (entidad.TryGetValue("id", out var fkidsentido))
+        {
+            var sentido = Sentido.FirstOrDefault(t => ObtenerValor(t, "id") == fkidsentido?.ToString());
+            return sentido != null ? ObtenerValor(sentido, "nombre") : "(sin nombre)";
+        }
+        return "(sin sentido)";
+    }
+    private string ObtenerNombreFrecuenciaDesdeEntidad(Dictionary<string, object> entidad)
+    {
+        if (entidad.TryGetValue("id", out var fkidfrecuencia))
+        {
+            var frecuencia = Frecuencia.FirstOrDefault(t => ObtenerValor(t, "id") == fkidfrecuencia?.ToString());
+            return frecuencia != null ? ObtenerValor(frecuencia, "nombre") : "(sin nombre)";
+        }
+        return "(sin frecuencia)";
+    }
+    private string ObtenerNombreArticuloDesdeEntidad(Dictionary<string, object> entidad)
+    {
+        if (entidad.TryGetValue("id", out var fkidarticulo))
+        {
+            var articulo = Articulo.FirstOrDefault(t => ObtenerValor(t, "id") == fkidarticulo?.ToString());
+            return articulo != null ? ObtenerValor(articulo, "nombre") : "(sin nombre)";
+        }
+        return "(sin articulo)";
+    }
+    private string ObtenerNombreLiteralDesdeEntidad(Dictionary<string, object> entidad)
+    {
+        if (entidad.TryGetValue("id", out var fkidliteral))
+        {
+            var literal = Literal.FirstOrDefault(t => ObtenerValor(t, "id") == fkidliteral?.ToString());
+            return literal != null ? ObtenerValor(literal, "descripcion") : "(sin descripcion)";
+        }
+        return "(sin literal)";
+    }
+    private string ObtenerNombreNumeralDesdeEntidad(Dictionary<string, object> entidad)
+    {
+        if (entidad.TryGetValue("id", out var fkidnumeral))
+        {
+            var numeral = Numeral.FirstOrDefault(t => ObtenerValor(t, "id") == fkidnumeral?.ToString());
+            return numeral != null ? ObtenerValor(numeral, "descripcion") : "(sin descripcion)";
+        }
+        return "(sin numeral)";
+    }
+    private string ObtenerNombreParagrafoDesdeEntidad(Dictionary<string, object> entidad)
+    {
+        if (entidad.TryGetValue("id", out var fkidparagrafo))
+        {
+            var paragrafo = Paragrafo.FirstOrDefault(t => ObtenerValor(t, "id") == fkidparagrafo?.ToString());
+            return paragrafo != null ? ObtenerValor(paragrafo, "descripcion") : "(sin descripcion)";
+        }
+        return "(sin paragrafo)";
+    }
+    private string ObtenerNombreActorDesdeEntidad(Dictionary<string, object> entidad)
+    {
+        if (entidad.TryGetValue("id", out var fkidresponsable))
+        {
+            var actor = Actor.FirstOrDefault(t => ObtenerValor(t, "id") == fkidresponsable?.ToString());
+            return actor != null ? ObtenerValor(actor, "nombre") : "(sin nombre)";
+        }
+        return "(sin actor)";
+    }
+    private string ObtenerNombreRepresenDesdeEntidad(Dictionary<string, object> entidad)
+    {
+        if (entidad.TryGetValue("id", out var fkidrepresenvisual))
+        {
+            var represenvisual = RepresenVisual.FirstOrDefault(t => ObtenerValor(t, "id") == fkidrepresenvisual?.ToString());
+            return represenvisual != null ? ObtenerValor(represenvisual, "nombre") : "(sin nombre)";
+        }
+        return "(sin representacion visual)";
+    }
+    private string ObtenerNombreFuentesDesdeEntidad(Dictionary<string, object> entidad)
+    {
+        if (entidad.TryGetValue("id", out var fkidfuente))
+        {
+            var fuente = Fuente.FirstOrDefault(t => ObtenerValor(t, "id") == fkidfuente?.ToString());
+            return fuente != null ? ObtenerValor(fuente, "nombre") : "(sin nombre)";
+        }
+        return "(sin fuentes)";
+    }
+    private string ObtenerNombreVariableDesdeEntidad(Dictionary<string, object> entidad)
+    {
+        if (entidad.TryGetValue("id", out var fkidvariable))
+        {
+            var variable = Variable.FirstOrDefault(t => ObtenerValor(t, "id") == fkidvariable?.ToString());
+            return variable != null ? ObtenerValor(variable, "nombre") : "(sin nombre)";
+        }
+        return "(sin variable)";
+    }
+    private string ObtenerNombreUsuarioDesdeEntidad(Dictionary<string, object> entidad)
+    {
+        if (entidad.TryGetValue("email", out var fkemailusuario))
+        {
+            var usuario = Usuario.FirstOrDefault(t => ObtenerValor(t, "email") == fkemailusuario?.ToString());
+            return usuario != null ? ObtenerValor(usuario, "email") : "(sin email)";
+        }
+        return "(sin usuario)";
+    }
+}
