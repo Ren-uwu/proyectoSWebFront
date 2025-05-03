@@ -121,6 +121,18 @@
                             <option value="@ObtenerValor(A, "id")">@ObtenerNombreActorDesdeEntidad(A)</option>
                         }
                     </select>
+                    <div class="col-auto">
+                        <button type="button" class="btn btn-primary" @onclick="AgregarActor">Agregar</button>
+                    </div>
+                    <ul class="list-group">
+                        @foreach (var item in ResponsableIndicador)
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                @item["fkidresponsable"]
+                                <button type="button" class="btn btn-sm btn-danger" @onclick="() => EliminarActor(item)">Eliminar</button>
+                            </li>
+                        }
+                    </ul>
                 </div>
                 <div class="form-group">
                     <label>Representacion Visual</label>
@@ -131,6 +143,18 @@
                             <option value="@ObtenerValor(R, "id")">@ObtenerNombreRepresenDesdeEntidad(R)</option>
                         }
                     </select>
+                    <div class="col-auto">
+                        <button type="button" class="btn btn-primary" @onclick="AgregarRepresen">Agregar</button>
+                    </div>
+                    <ul class="list-group">
+                        @foreach (var item in RepresenIndicador)
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                @item["fkidrepresenvisual"]
+                                <button type="button" class="btn btn-sm btn-danger" @onclick="() => EliminarRepresen(item)">Eliminar</button>
+                            </li>
+                        }
+                    </ul>
                 </div>
                 <div class="form-group">
                     <label>Fuente</label>
@@ -141,6 +165,18 @@
                             <option value="@ObtenerValor(F, "id")">@ObtenerNombreFuentesDesdeEntidad(F)</option>
                         }
                     </select>
+                    <div class="col-auto">
+                        <button type="button" class="btn btn-primary" @onclick="AgregarFuentes">Agregar</button>
+                    </div>
+                    <ul class="list-group">
+                        @foreach (var item in FuenteIndicador)
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                @item["fkidfuente"]
+                                <button type="button" class="btn btn-sm btn-danger" @onclick="() => EliminarFuentes(item)">Eliminar</button>
+                            </li>
+                        }
+                    </ul>
                 </div>
                 <div class="form-group">
                     <label>Variable</label>
@@ -164,11 +200,22 @@
                         }
                     </select>
                 </div>
+                <div class="col-auto">
+                    <button type="button" class="btn btn-primary" @onclick="AgregarVariable">Agregar</button>
+                </div>
+                <ul class="list-group">
+                    @foreach (var item in VariableIndicador)
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                @item["fkidvariable"] - @item["dato"] - @item["fkemailusuario"]
+                            </div>
+                                <button type="button" class="btn btn-sm btn-danger" @onclick="() => EliminarVariable(item)">Eliminar</button>
+                            </li>
+                        }
+                    </ul>
                 <label>Resultado:</label>
                 <input @bind="resultado" class="form-contFuente" placeholder="Ingrese el resultado del nuevo indicador" />
-                <div class="col-auto">
-                    <button type="button" class="btn btn-primary" @onclick="Agregar">Agregar</button>
-                </div>
             <hr />
              </div>
              <div class="modal-footer">
@@ -286,6 +333,18 @@
                             <option value="@ObtenerValor(A, "id")">@ObtenerNombreActorDesdeEntidad(A)</option>
                         }
                     </select>
+                    <div class="col-auto">
+                        <button type="button" class="btn btn-primary" @onclick="AgregarActor">Agregar</button>
+                    </div>
+                    <ul class="list-group">
+                        @foreach (var item in ResponsableIndicador)
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                @item["fkidresponsable"]
+                                <button type="button" class="btn btn-sm btn-danger" @onclick="() => EliminarActor(item)">Eliminar</button>
+                            </li>
+                        }
+                    </ul>
                 </div>
                 <div class="form-group">
                     <label>Nueva Representacion Visual</label>
@@ -296,6 +355,18 @@
                             <option value="@ObtenerValor(R, "id")">@ObtenerNombreRepresenDesdeEntidad(R)</option>
                         }
                     </select>
+                    <div class="col-auto">
+                        <button type="button" class="btn btn-primary" @onclick="AgregarRepresen">Agregar</button>
+                    </div>
+                    <ul class="list-group">
+                        @foreach (var item in RepresenIndicador)
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                @item["fkidrepresenvisual"]
+                                <button type="button" class="btn btn-sm btn-danger" @onclick="() => EliminarRepresen(item)">Eliminar</button>
+                            </li>
+                        }
+                    </ul>
                 </div>
                 <div class="form-group">
                     <label>Nueva Fuente</label>
@@ -306,6 +377,18 @@
                             <option value="@ObtenerValor(F, "id")">@ObtenerNombreFuentesDesdeEntidad(F)</option>
                         }
                     </select>
+                    <div class="col-auto">
+                        <button type="button" class="btn btn-primary" @onclick="AgregarFuentes">Agregar</button>
+                    </div>
+                    <ul class="list-group">
+                        @foreach (var item in FuenteIndicador)
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                @item["fkidfuente"]
+                                <button type="button" class="btn btn-sm btn-danger" @onclick="() => EliminarFuentes(item)">Eliminar</button>
+                            </li>
+                        }
+                    </ul>
                 </div>
                 <div class="form-group">
                     <label>Nueva Variable</label>
@@ -329,11 +412,22 @@
                         }
                     </select>
                 </div>
+                <div class="col-auto">
+                    <button type="button" class="btn btn-primary" @onclick="AgregarVariable">Agregar</button>
+                </div>
+                <ul class="list-group">
+                    @foreach (var item in VariableIndicador)
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                @item["fkidvariable"] - @item["dato"] - @item["fkemailusuario"]
+                            </div>
+                            <button type="button" class="btn btn-sm btn-danger" @onclick="() => EliminarVariable(item)">Eliminar</button>
+                        </li>
+                    }
+                </ul>
                 <label>Nuevo Resultado:</label>
                 <input @bind="resultado" class="form-contFuente"/>
-                <div class="col-auto">
-                    <button type="button" class="btn btn-primary" @onclick="Agregar">Agregar</button>
-                </div>
                 <hr />
             </div>
             <div class="modal-footer">
@@ -582,42 +676,73 @@ else
             cargando = false;
         }
     }
-    private void Agregar()
+
+    private void AgregarActor()
     {
         ResponsableIndicador.Add(new Dictionary<string, object>
         {
             { "fkidresponsable", fkidresponsable }
         });
+
+        fkidresponsable = "";
+    }
+
+    private void EliminarActor(Dictionary<string, object> producto)
+    {
+        ResponsableIndicador.Remove(producto);   
+    }
+
+    private void AgregarRepresen()
+    {
         RepresenIndicador.Add(new Dictionary<string, object>
         {
             { "fkidrepresenvisual", fkidrepresenvisual }
         });
+
+        fkidrepresenvisual = "";
+    }
+    private void EliminarRepresen(Dictionary<string, object> producto)
+    {
+        RepresenIndicador.Remove(producto);
+    }
+
+    private void AgregarFuentes()
+    {
+        FuenteIndicador.Add(new Dictionary<string, object>
+        {
+            { "fkidfuente", fkidfuente }
+        }); 
+
+        fkidfuente = "";
+    }
+
+    private void EliminarFuentes(Dictionary<string, object> producto)
+    {
+        FuenteIndicador.Remove(producto);   
+    }
+
+    private void AgregarVariable()
+    {
         VariableIndicador.Add(new Dictionary<string, object>
         {
             { "fkidvariable", fkidvariable },
             { "dato", dato },
             { "fkemailusuario", fkemailusuario }
         });
-        ResultadoIndicador.Add(new Dictionary<string, object>
-        {
-            { "resultado", resultado }
-        });
-        FuenteIndicador.Add(new Dictionary<string, object>
-        {
-            { "fkidfuente", fkidfuente }
-        });
 
-        fkidresponsable = "";
-        fkidrepresenvisual = "";
         fkidvariable = "";
         dato = 0;
         fkemailusuario = "";
-        resultado = 0;
-        fkidfuente = "";
+    }
+
+    private void EliminarVariable(Dictionary<string, object> producto)
+    {
+        VariableIndicador.Remove(producto);
     }
 
     private async Task CrearNuevoIndicador()
     {
+
         var nuevaEntidad = new Dictionary<string, object>
         {
             { "codigoIndicador", codigoIndicador },
@@ -638,7 +763,7 @@ else
             { "responsablesporindicador", ResponsableIndicador },
             { "fuentesporindicador", FuenteIndicador },
             { "variablesporindicador", VariableIndicador },
-            { "resultadoporindicador", ResultadoIndicador }
+            { "resultadoporindicador", resultado }
         };
         Console.WriteLine(JsonSerializer.Serialize(nuevaEntidad));
         var creado = await servicioEntidad.EjecutarProcedimientoAsync(PROYECTO, TABLA, "insertar_indicador_tablas", nuevaEntidad);
@@ -663,7 +788,7 @@ else
             ResponsableIndicador.Clear();
             FuenteIndicador.Clear();
             VariableIndicador.Clear();
-            ResultadoIndicador.Clear();
+            resultado = 0;
             mostrarFormularioCrear = false;
             await CargarIndicadores();
         }
@@ -701,25 +826,32 @@ else
         {
             if (ObtenerValor(v, "fkidindicador") == idIndicador)
             {
-                fkidresponsable = ObtenerValor(v, "fkidresponsable");
+                ResponsableIndicador.Add(new Dictionary<string, object>
+                {
+                    { "fkidresponsable", ObtenerValor(v,"fkidresponsable") }
+                });
             }
         }
         foreach (var v in represenvisualporindicador)
         {
             if (ObtenerValor(v, "fkidindicador") == idIndicador)
             {
-
-                fkidrepresenvisual = ObtenerValor(v, "fkidrepresenvisual");
-
+                RepresenIndicador.Add(new Dictionary<string, object>
+                {
+                    { "fkidrepresenvisual", ObtenerValor(v,"fkidrepresenvisual") }
+                });
             }
         }
         foreach (var v in variablesporindicador)
         {
             if (ObtenerValor(v, "fkidindicador") == idIndicador)
             {
-                fkidvariable = ObtenerValor(v, "fkidvariable");
-                dato = double.Parse(ObtenerValor(v, "dato"));
-                fkemailusuario = ObtenerValor(v, "fkemailusuario");
+                VariableIndicador.Add(new Dictionary<string, object>
+                {
+                    { "fkidvariable", ObtenerValor(v,"fkidvariable") },
+                    { "dato", ObtenerValor(v,"dato") },
+                    { "fkemailusuario", ObtenerValor(v,"fkemailusuario") }
+                });
             }
         }
         foreach (var v in resultadoporindicador)
@@ -735,7 +867,10 @@ else
         {
             if (ObtenerValor(v, "fkidindicador") == idIndicador)
             {
-                fkidfuente = ObtenerValor(v, "fkidfuente");
+                FuenteIndicador.Add(new Dictionary<string, object>
+                {
+                    { "fkidfuente", ObtenerValor(v,"fkidfuente") }
+                });
             }
         }
         mostrarFormularioEditar = true;
@@ -744,6 +879,8 @@ else
 
     private async Task ActualizarIndicador()
     {
+        resultado = 0;
+
         var entidadActualizada = new Dictionary<string, object>
         {
             {"fkidindicadores", idIndicador },
@@ -765,7 +902,7 @@ else
             { "responsablesporindicador", ResponsableIndicador },
             { "fuentesporindicador", FuenteIndicador },
             { "variablesporindicador", VariableIndicador },
-            { "resultadoporindicador", ResultadoIndicador }
+            { "resultadoporindicador", resultado }
         };
         var actualizado = await servicioEntidad.EjecutarProcedimientoAsync(PROYECTO, TABLA, "actualizar_indicador_tablas", entidadActualizada);
         if (actualizado != null)
@@ -789,7 +926,7 @@ else
             ResponsableIndicador.Clear();
             FuenteIndicador.Clear();
             VariableIndicador.Clear();
-            ResultadoIndicador.Clear();
+            resultado = 0;
             mostrarFormularioEditar = false;
             await CargarIndicadores();
         }
@@ -859,7 +996,7 @@ else
         ResponsableIndicador.Clear();
         FuenteIndicador.Clear();
         VariableIndicador.Clear();
-        ResultadoIndicador.Clear();
+        resultado = 0;
     }
 
     private string ObtenerValor(Dictionary<string, object> diccionario, string clave)
