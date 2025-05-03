@@ -5,18 +5,18 @@ using ProyectoSWebfront.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-// Registra el componente App (definido en App.razor) como componente raíz
+// Registra el componente App (definido en App.razor) como componente raï¿½z
 // Lo asocia al elemento HTML con el id "app" en wwwroot/index.html
 builder.RootComponents.Add<App>("#app");
-// Registra el componente HeadOutlet después del elemento <head> en el documento HTML
-// Esto permite gestionar el contenido dinámico del encabezado HTML desde los componentes Blazor
-// como títulos de página o metadatos
+// Registra el componente HeadOutlet despuï¿½s del elemento <head> en el documento HTML
+// Esto permite gestionar el contenido dinï¿½mico del encabezado HTML desde los componentes Blazor
+// como tï¿½tulos de pï¿½gina o metadatos
 builder.RootComponents.Add<HeadOutlet>("head::after");
-// Este HttpClient se inicializa con la dirección base de la API genérica
+// Este HttpClient se inicializa con la direcciï¿½n base de la API genï¿½rica
 // La URL base debe terminar con una barra "/" para que las rutas relativas funcionen correctamente
 builder.Services.AddScoped(sp => new HttpClient
 {
-    BaseAddress = new Uri("http://localhost:5062/api/")
+    BaseAddress = new Uri("http://localhost:5281/api/")
 });
 
 builder.Services.AddScoped<ServicioEntidad>();
