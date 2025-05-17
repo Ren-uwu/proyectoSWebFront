@@ -5,6 +5,7 @@
 @inject ServicioEntidad servicioEntidad
 @inject NavigationManager navegacionManager
 @inject IJSRuntime JS
+@inject IJSRuntime JSRuntime 
 @inherits ValidacionAcceso
 
 <PageTitle>Lista de Fuentes</PageTitle>
@@ -145,18 +146,28 @@ else
         }
     }
 
-    private void MostrarFormularioCrear()
+    private async void MostrarFormularioCrear()
     {
-        mostrarFormularioCrear = true;
-        mostrarFormularioEditar = false;
+        if(RolUsuario == "admin"){
+            mostrarFormularioCrear = true;
+            mostrarFormularioEditar = false;
+            return;
+        }
+
+        await JSRuntime.InvokeVoidAsync("alert", "No tienes acceso a crear fuentes");
     }
 
-    private void MostrarFormularioEditar(Dictionary<string, object> Fuente)
+    private async void MostrarFormularioEditar(Dictionary<string, object> Fuente)
     {
+        if(RolUsuario == "admin" || RolUsuario == "Validador"){
         claveEditando = ObtenerValor(Fuente, "nombre");
         nombreEditado = claveEditando;
         mostrarFormularioEditar = true;
         mostrarFormularioCrear = false;
+        return;
+            }
+
+        await JSRuntime.InvokeVoidAsync("alert", "No tienes acceso a editar fuentes");
     }
 
     private async Task ActualizarFuente()
@@ -179,20 +190,25 @@ else
 
     private async Task EliminarFuente(Dictionary<string, object> Fuente)
     {
-        string claveEliminar = ObtenerValor(Fuente, "nombre");
-        if (!await ConfirmarEliminacion(claveEliminar))
-        {
-            return; // Si el usuario cancela, no se realizara la eliminacion
+        if(RolUsuario == "admin"){
+            string claveEliminar = ObtenerValor(Fuente, "nombre");
+            if (!await ConfirmarEliminacion(claveEliminar))
+            {
+                return; // Si el usuario cancela, no se realizara la eliminacion
+            }
+            bool eliminado = await servicioEntidad.EliminarAsync(PROYECTO, TABLA, "nombre", claveEliminar);
+            if (eliminado)
+            {
+                await CargarFuentes(); // Funcion para recargar la pagina y consultas
+            }
+            else
+            {
+                errorMensaje = "Error al eliminar el Fuente.";
+            }
+            return;
         }
-        bool eliminado = await servicioEntidad.EliminarAsync(PROYECTO, TABLA, "nombre", claveEliminar);
-        if (eliminado)
-        {
-            await CargarFuentes(); // Funcion para recargar la pagina y consultas
-        }
-        else
-        {
-            errorMensaje = "Error al eliminar el Fuente.";
-        }
+
+        await JSRuntime.InvokeVoidAsync("alert", "No tienes acceso a elimianar fuentes");
     }
 
     private async Task<bool> ConfirmarEliminacion(string nombre)

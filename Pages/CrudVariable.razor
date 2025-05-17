@@ -5,6 +5,7 @@
 @inject ServicioEntidad servicioEntidad
 @inject NavigationManager navegacionManager
 @inject IJSRuntime JS
+@inject IJSRuntime JSRuntime 
 @inherits ValidacionAcceso
 
 <PageTitle>Lista de Variables</PageTitle>
@@ -174,19 +175,29 @@ else
         }
     }
 
-    private void MostrarFormularioCrear()
+    private async void MostrarFormularioCrear()
     {
-        mostrarFormularioCrear = true;
-        mostrarFormularioEditar = false;
+        if(RolUsuario == "admin"){
+            mostrarFormularioCrear = true;
+            mostrarFormularioEditar = false;
+            return;
+        }
+
+        await JSRuntime.InvokeVoidAsync("alert", "No tienes acceso a crear variables");
     }
 
-    private void MostrarFormularioEditar(Dictionary<string, object> Variable)
+    private async void MostrarFormularioEditar(Dictionary<string, object> Variable)
     {
+        if(RolUsuario == "admin" || RolUsuario == "Validador"){
         idVariable =ObtenerValor(Variable, "id");
         nombreVariable = ObtenerValor(Variable, "nombre");
         fkemailusuarioVariable = ObtenerValor(Variable, "fkemailusuario");
         mostrarFormularioEditar = true;
         mostrarFormularioCrear = false;
+        return;
+        }
+
+        await JSRuntime.InvokeVoidAsync("alert", "No tienes acceso a editar variables");
     }
 
     private async Task ActualizarVariable()
@@ -213,20 +224,25 @@ else
 
     private async Task EliminarVariable(Dictionary<string, object> Variable)
     {
-        string claveEliminar = ObtenerValor(Variable, "id");
-        if (!await ConfirmarEliminacion(claveEliminar))
-        {
-            return; // Si el usuario cancela, no se realizara la eliminacion
+        if(RolUsuario == "admin"){
+            string claveEliminar = ObtenerValor(Variable, "id");
+            if (!await ConfirmarEliminacion(claveEliminar))
+            {
+                return; // Si el usuario cancela, no se realizara la eliminacion
+            }
+            bool eliminado = await servicioEntidad.EliminarAsync(PROYECTO, TABLA, "id", claveEliminar);
+            if (eliminado)
+            {
+                await CargarVariables(); // Funcion para recargar la pagina y consultas
+            }
+            else
+            {
+                errorMensaje = "Error al eliminar el Variable.";
+            }
+            return;
         }
-        bool eliminado = await servicioEntidad.EliminarAsync(PROYECTO, TABLA, "id", claveEliminar);
-        if (eliminado)
-        {
-            await CargarVariables(); // Funcion para recargar la pagina y consultas
-        }
-        else
-        {
-            errorMensaje = "Error al eliminar el Variable.";
-        }
+
+        await JSRuntime.InvokeVoidAsync("alert", "No tienes acceso a elimianar variables");
     }
 
     private async Task<bool> ConfirmarEliminacion(string nombre)
