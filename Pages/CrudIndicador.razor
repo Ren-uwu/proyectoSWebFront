@@ -5,6 +5,7 @@
 @inject ServicioEntidad servicioEntidad
 @inject NavigationManager navegacionManager
 @inject IJSRuntime JS
+@inject IJSRuntime JSRuntime 
 @inherits ValidacionAcceso
 
 <PageTitle>Lista de indicadores</PageTitle>
@@ -799,14 +800,20 @@ else
         }
     }
 
-    private void MostrarFormularioCrear()
+    private async void MostrarFormularioCrear()
     {
-        mostrarFormularioCrear = true;
-        mostrarFormularioEditar = false;
+        if(RolUsuario == "admin"){
+            mostrarFormularioCrear = true;
+            mostrarFormularioEditar = false;
+            return;
+        }
+
+        await JSRuntime.InvokeVoidAsync("alert", "No tienes acceso a crear indicador");
     }
 
-    private void MostrarFormularioEditar(Dictionary<string, object> indicador)
+    private async void MostrarFormularioEditar(Dictionary<string, object> indicador)
     {
+        if(RolUsuario == "admin" || RolUsuario == "Validador"){
         idIndicador = ObtenerValor(indicador, "id");
         codigoIndicador = ObtenerValor(indicador, "codigo");
         objetivoIndicador = ObtenerValor(indicador, "objetivo");
@@ -876,6 +883,10 @@ else
         }
         mostrarFormularioEditar = true;
         mostrarFormularioCrear = false;
+        return;
+        }
+
+        await JSRuntime.InvokeVoidAsync("alert", "No tienes acceso a editar indicador");
     }
 
     private async Task ActualizarIndicador()
@@ -939,34 +950,39 @@ else
 
     private async Task EliminarIndicador(Dictionary<string, object> indicador)
     {
-        string idEliminar = ObtenerValor(indicador, "id");
-    string nombreEliminar = ObtenerValor(indicador, "nombre");
+        if(RolUsuario == "admin"){
+            string idEliminar = ObtenerValor(indicador, "id");
+            string nombreEliminar = ObtenerValor(indicador, "nombre");
 
-    if (!await ConfirmarEliminacion(nombreEliminar))
-        return;
+            if (!await ConfirmarEliminacion(nombreEliminar))
+                return;
 
-    var entidadEliminada = new Dictionary<string, object>
-    {
-        { "fkidindicadores", idEliminar }
-    };
+            var entidadEliminada = new Dictionary<string, object>
+            {
+                { "fkidindicadores", idEliminar }
+            };
 
-    try
-    {
-        var eliminado = await servicioEntidad.EjecutarProcedimientoAsync(PROYECTO, TABLA, "eliminar_indicador_tablas", entidadEliminada);
+            try
+            {
+                var eliminado = await servicioEntidad.EjecutarProcedimientoAsync(PROYECTO, TABLA, "eliminar_indicador_tablas", entidadEliminada);
 
-        if (eliminado != null)
-        {
-            await CargarIndicadores();
+                if (eliminado != null)
+                {
+                    await CargarIndicadores();
+                }
+                else
+                {
+                    errorMensaje = "Error al eliminar el indicador.";
+                }
+            }
+            catch (Exception ex)
+            {
+                errorMensaje = $"Error inesperado: {ex.Message}";
+            }
+            return;
         }
-        else
-        {
-            errorMensaje = "Error al eliminar el indicador.";
-        }
-    }
-    catch (Exception ex)
-    {
-        errorMensaje = $"Error inesperado: {ex.Message}";
-    }
+
+        await JSRuntime.InvokeVoidAsync("alert", "No tienes acceso a elimianar indicadores");
     }
 
     private async Task<bool> ConfirmarEliminacion(string nombre)

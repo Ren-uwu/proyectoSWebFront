@@ -5,6 +5,7 @@
 @inject ServicioEntidad servicioEntidad
 @inject NavigationManager navegacionManager
 @inject IJSRuntime JS
+@inject IJSRuntime JSRuntime 
 @inherits ValidacionAcceso
 
 <PageTitle>Lista de Actores</PageTitle>
@@ -238,14 +239,20 @@ else
         }
     }
 
-    private void MostrarFormularioCrear()
+    private async void MostrarFormularioCrear()
     {
-        mostrarFormularioCrear = true;
-        mostrarFormularioEditar = false;
+        if(RolUsuario == "admin"){
+            mostrarFormularioCrear = true;
+            mostrarFormularioEditar = false;
+            return;
+        }
+
+        await JSRuntime.InvokeVoidAsync("alert", "No tienes acceso a crear actores");
     }
 
-    private void MostrarFormularioEditar(Dictionary<string, object> producto)
+    private async void MostrarFormularioEditar(Dictionary<string, object> producto)
     {
+        if(RolUsuario == "admin" || RolUsuario == "Validador"){
         idEditando = ObtenerValor(producto, "id");
         claveEditando = ObtenerValor(producto, "nombre");
         idTipoActorEdit = ObtenerValor(producto, "fkidtipoactor");
@@ -254,6 +261,10 @@ else
         idTipoActor = idTipoActorEdit;
         mostrarFormularioEditar = true;
         mostrarFormularioCrear = false;
+        return;
+            }
+
+        await JSRuntime.InvokeVoidAsync("alert", "No tienes acceso a editar fuentes");
     }
 
     private async Task ActualizarActor()
@@ -281,20 +292,25 @@ else
 
     private async Task EliminarSeccion(Dictionary<string, object> producto)
     {
-        string claveEliminar = ObtenerValor(producto, "nombre");
-        if (!await ConfirmarEliminacion(claveEliminar))
-        {
+        if(RolUsuario == "admin"){
+            string claveEliminar = ObtenerValor(producto, "nombre");
+            if (!await ConfirmarEliminacion(claveEliminar))
+            {
+                return;
+            }
+            bool eliminado = await servicioEntidad.EliminarAsync(PROYECTO, TABLA, "nombre", claveEliminar);
+            if (eliminado)
+            {
+                await CargarProductos();
+            }
+            else
+            {
+                errorMensaje = "Error al eliminar la seccion.";
+            }
             return;
         }
-        bool eliminado = await servicioEntidad.EliminarAsync(PROYECTO, TABLA, "nombre", claveEliminar);
-        if (eliminado)
-        {
-            await CargarProductos();
-        }
-        else
-        {
-            errorMensaje = "Error al eliminar la seccion.";
-        }
+
+        await JSRuntime.InvokeVoidAsync("alert", "No tienes acceso a elimianar actores");
     }
 
     private async Task<bool> ConfirmarEliminacion(string nombre)

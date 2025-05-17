@@ -5,6 +5,7 @@
 @inject ServicioEntidad servicioEntidad
 @inject NavigationManager navegacionManager
 @inject IJSRuntime JS
+@inject IJSRuntime JSRuntime 
 @inherits ValidacionAcceso
 
 <PageTitle>Lista de roles</PageTitle>
@@ -145,18 +146,27 @@ else
         }
     }
 
-    private void MostrarFormularioCrear()
+    private async void MostrarFormularioCrear()
     {
-        mostrarFormularioCrear = true;
-        mostrarFormularioEditar = false;
-    }
+        if(RolUsuario == "admin"){
+            mostrarFormularioCrear = true;
+            mostrarFormularioEditar = false;
+            return;
+        }
 
-    private void MostrarFormularioEditar(Dictionary<string, object> rol)
+        await JSRuntime.InvokeVoidAsync("alert", "No tienes acceso a crear roles");
+    }
+    private async void MostrarFormularioEditar(Dictionary<string, object> rol)
     {
-        claveEditando = ObtenerValor(rol, "nombre");
-        nombreEditado = claveEditando;
-        mostrarFormularioEditar = true;
-        mostrarFormularioCrear = false;
+        if(RolUsuario == "admin" || RolUsuario == "Validador"){
+            claveEditando = ObtenerValor(rol, "nombre");
+            nombreEditado = claveEditando;
+            mostrarFormularioEditar = true;
+            mostrarFormularioCrear = false;
+            return;
+        }
+
+        await JSRuntime.InvokeVoidAsync("alert", "No tienes acceso a editar roles");
     }
 
     private async Task Actualizarrol()
@@ -179,20 +189,25 @@ else
 
     private async Task Eliminarrol(Dictionary<string, object> rol)
     {
-        string claveEliminar = ObtenerValor(rol, "nombre");
-        if (!await ConfirmarEliminacion(claveEliminar))
-        {
-            return; // Si el usuario cancela, no se realizara la eliminacion
+        if(RolUsuario == "admin"){
+            string claveEliminar = ObtenerValor(rol, "nombre");
+            if (!await ConfirmarEliminacion(claveEliminar))
+            {
+                return; // Si el usuario cancela, no se realizara la eliminacion
+            }
+            bool eliminado = await servicioEntidad.EliminarAsync(PROYECTO, TABLA, "nombre", claveEliminar);
+            if (eliminado)
+            {
+                await Cargarroles(); // Funcion para recargar la pagina y consultas
+            }
+            else
+            {
+                errorMensaje = "Error al eliminar el rol.";
+            }
+            return;
         }
-        bool eliminado = await servicioEntidad.EliminarAsync(PROYECTO, TABLA, "nombre", claveEliminar);
-        if (eliminado)
-        {
-            await Cargarroles(); // Funcion para recargar la pagina y consultas
-        }
-        else
-        {
-            errorMensaje = "Error al eliminar el rol.";
-        }
+
+        await JSRuntime.InvokeVoidAsync("alert", "No tienes acceso a elimianar rol");
     }
 
     private async Task<bool> ConfirmarEliminacion(string nombre)

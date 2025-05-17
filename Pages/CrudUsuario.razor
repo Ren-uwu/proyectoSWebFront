@@ -5,6 +5,7 @@
 @inject ServicioEntidad servicioEntidad
 @inject NavigationManager navegacionManager
 @inject IJSRuntime JS
+@inject IJSRuntime JSRuntime 
 @inherits ValidacionAcceso
 
 <PageTitle>Lista de Usuarios</PageTitle>
@@ -179,27 +180,37 @@ else
     }
 
 
-    private void MostrarFormularioCrear()
+    private async void MostrarFormularioCrear()
     {
-        mostrarFormularioCrear = true;
-        mostrarFormularioEditar = false;
+        if(RolUsuario == "admin"){
+            mostrarFormularioCrear = true;
+            mostrarFormularioEditar = false;
+            return;
+        }
+
+        await JSRuntime.InvokeVoidAsync("alert", "No tienes acceso a crear usuarios");
     }
 
-    private void MostrarFormularioEditar(Dictionary<string, object> Usuario)
+    private async void MostrarFormularioEditar(Dictionary<string, object> Usuario)
     {
-        emailUsuario = ObtenerValor(Usuario, "email");
-        contrasenaUsuario = ObtenerValor(Usuario, "contrasena");
-        foreach (var v in RolesUsuarios)
-            {   
-                if (ObtenerValor(v,"fkemail") == emailUsuario){
-                    RolesUsuariosAgregados.Add(new Dictionary<string, object>
-                    {
-                        { "fkidrol", ObtenerValor(v,"fkidrol") }
-                    });
+        if(RolUsuario == "admin"){
+            emailUsuario = ObtenerValor(Usuario, "email");
+            contrasenaUsuario = ObtenerValor(Usuario, "contrasena");
+            foreach (var v in RolesUsuarios)
+                {   
+                    if (ObtenerValor(v,"fkemail") == emailUsuario){
+                        RolesUsuariosAgregados.Add(new Dictionary<string, object>
+                        {
+                            { "fkidrol", ObtenerValor(v,"fkidrol") }
+                        });
+                    }
                 }
+            mostrarFormularioEditar = true;
+            mostrarFormularioCrear = false;
+            return;
             }
-        mostrarFormularioEditar = true;
-        mostrarFormularioCrear = false;
+
+        await JSRuntime.InvokeVoidAsync("alert", "No tienes acceso a editar usuarios");
     }
 
     private async Task<bool> ConfirmarEliminacion(string email)
@@ -304,34 +315,39 @@ else
     
     private async Task DropUsuario(Dictionary<string, object> Usuario)
     {
-        try
-        {
-            if (!await ConfirmarEliminacion(ObtenerValor(Usuario, "email")))
+        if(RolUsuario == "admin"){
+            try
             {
-                return; // Si el usuario cancela, no se realizara la eliminacion
-            }
-            var parametros = new Dictionary<string, object>
-            {
-                { "email", ObtenerValor(Usuario, "email") }
-            };
+                if (!await ConfirmarEliminacion(ObtenerValor(Usuario, "email")))
+                    {
+                        return; // Si el usuario cancela, no se realizara la eliminacion
+                    }
+                    var parametros = new Dictionary<string, object>
+                    {
+                        { "email", ObtenerValor(Usuario, "email") }
+                    };
 
-            var respuesta = await servicioEntidad.EjecutarProcedimientoAsync(
-                "proyecto",
-                "factura",
-                "elimiar_usuario_y_roles",
-                parametros
-            );
+                    var respuesta = await servicioEntidad.EjecutarProcedimientoAsync(
+                        "proyecto",
+                        "factura",
+                        "elimiar_usuario_y_roles",
+                        parametros
+                    );
 
-            if (respuesta != null)
-            {
-                await CargarUsuarios();
-                await CargarRolesUsuarios();
+                    if (respuesta != null)
+                    {
+                        await CargarUsuarios();
+                        await CargarRolesUsuarios();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error al eliminar usuario: {ex.Message}");
+                }
+                return;
             }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error al eliminar usuario: {ex.Message}");
-        }
+
+        await JSRuntime.InvokeVoidAsync("alert", "No tienes acceso a elimianar usuarios");
     }
     private string ObtenerValor(Dictionary<string, object> diccionario, string clave)
     {

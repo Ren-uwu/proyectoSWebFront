@@ -5,6 +5,7 @@
 @inject ServicioEntidad servicioEntidad
 @inject NavigationManager navegacionManager
 @inject IJSRuntime JS
+@inject IJSRuntime JSRuntime 
 @inherits ValidacionAcceso
 
 <PageTitle>Lista de Representacions</PageTitle>
@@ -145,18 +146,28 @@ else
         }
     }
 
-    private void MostrarFormularioCrear()
+    private async void MostrarFormularioCrear()
     {
-        mostrarFormularioCrear = true;
-        mostrarFormularioEditar = false;
+        if(RolUsuario == "admin"){
+            mostrarFormularioCrear = true;
+            mostrarFormularioEditar = false;
+            return;
+        }
+
+        await JSRuntime.InvokeVoidAsync("alert", "No tienes acceso a crear represenvisual");
     }
 
-    private void MostrarFormularioEditar(Dictionary<string, object> Representacion)
+    private async void MostrarFormularioEditar(Dictionary<string, object> Representacion)
     {
-        claveEditando = ObtenerValor(Representacion, "nombre");
-        nombreEditado = claveEditando;
-        mostrarFormularioEditar = true;
-        mostrarFormularioCrear = false;
+        if(RolUsuario == "admin" || RolUsuario == "Validador"){
+            claveEditando = ObtenerValor(Representacion, "nombre");
+            nombreEditado = claveEditando;
+            mostrarFormularioEditar = true;
+            mostrarFormularioCrear = false;
+            return;
+            }
+
+        await JSRuntime.InvokeVoidAsync("alert", "No tienes acceso a editar represenvisual");
     }
 
     private async Task ActualizarRepresentacion()
@@ -179,20 +190,25 @@ else
 
     private async Task EliminarRepresentacion(Dictionary<string, object> Representacion)
     {
-        string claveEliminar = ObtenerValor(Representacion, "nombre");
-        if (!await ConfirmarEliminacion(claveEliminar))
-        {
-            return; // Si el usuario cancela, no se realizara la eliminacion
+        if(RolUsuario == "admin"){
+            string claveEliminar = ObtenerValor(Representacion, "nombre");
+            if (!await ConfirmarEliminacion(claveEliminar))
+            {
+                return; // Si el usuario cancela, no se realizara la eliminacion
+            }
+            bool eliminado = await servicioEntidad.EliminarAsync(PROYECTO, TABLA, "nombre", claveEliminar);
+            if (eliminado)
+            {
+                await CargarRepresentacions(); // Funcion para recargar la pagina y consultas
+            }
+            else
+            {
+                errorMensaje = "Error al eliminar el Representacion.";
+            }
+            return;
         }
-        bool eliminado = await servicioEntidad.EliminarAsync(PROYECTO, TABLA, "nombre", claveEliminar);
-        if (eliminado)
-        {
-            await CargarRepresentacions(); // Funcion para recargar la pagina y consultas
-        }
-        else
-        {
-            errorMensaje = "Error al eliminar el Representacion.";
-        }
+
+        await JSRuntime.InvokeVoidAsync("alert", "No tienes acceso a elimianar represenvisuales");
     }
 
     private async Task<bool> ConfirmarEliminacion(string nombre)

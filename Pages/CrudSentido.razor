@@ -5,6 +5,7 @@
 @inject ServicioEntidad servicioEntidad
 @inject NavigationManager navegacionManager
 @inject IJSRuntime JS
+@inject IJSRuntime JSRuntime 
 @inherits ValidacionAcceso
 
 <PageTitle>Lista de sentidos</PageTitle>
@@ -145,18 +146,28 @@ else
         }
     }
 
-    private void MostrarFormularioCrear()
+    private async void MostrarFormularioCrear()
     {
-        mostrarFormularioCrear = true;
-        mostrarFormularioEditar = false;
+        if(RolUsuario == "admin"){
+            mostrarFormularioCrear = true;
+            mostrarFormularioEditar = false;
+            return;
+        }
+
+        await JSRuntime.InvokeVoidAsync("alert", "No tienes acceso a crear sentidos");
     }
 
-    private void MostrarFormularioEditar(Dictionary<string, object> sentido)
+    private async void MostrarFormularioEditar(Dictionary<string, object> sentido)
     {
-        claveEditando = ObtenerValor(sentido, "nombre");
-        nombreEditado = claveEditando;
-        mostrarFormularioEditar = true;
-        mostrarFormularioCrear = false;
+        if(RolUsuario == "admin" || RolUsuario == "Validador"){
+            claveEditando = ObtenerValor(sentido, "nombre");
+            nombreEditado = claveEditando;
+            mostrarFormularioEditar = true;
+            mostrarFormularioCrear = false;
+        return;
+            }
+
+        await JSRuntime.InvokeVoidAsync("alert", "No tienes acceso a editar sentidos");
     }
 
     private async Task ActualizarSentido()
@@ -179,20 +190,25 @@ else
 
     private async Task EliminarSentido(Dictionary<string, object> sentido)
     {
-        string claveEliminar = ObtenerValor(sentido, "nombre");
-        if (!await ConfirmarEliminacion(claveEliminar))
-        {
-            return; // Si el usuario cancela, no se realizara la eliminacion
+        if(RolUsuario == "admin"){
+            string claveEliminar = ObtenerValor(sentido, "nombre");
+            if (!await ConfirmarEliminacion(claveEliminar))
+            {
+                return; // Si el usuario cancela, no se realizara la eliminacion
+            }
+            bool eliminado = await servicioEntidad.EliminarAsync(PROYECTO, TABLA, "nombre", claveEliminar);
+            if (eliminado)
+            {
+                await Cargarsentidos(); // Funcion para recargar la pagina y consultas
+            }
+            else
+            {
+                errorMensaje = "Error al eliminar el sentido.";
+            }
+            return;
         }
-        bool eliminado = await servicioEntidad.EliminarAsync(PROYECTO, TABLA, "nombre", claveEliminar);
-        if (eliminado)
-        {
-            await Cargarsentidos(); // Funcion para recargar la pagina y consultas
-        }
-        else
-        {
-            errorMensaje = "Error al eliminar el sentido.";
-        }
+
+        await JSRuntime.InvokeVoidAsync("alert", "No tienes acceso a elimianar sentidos");
     }
 
     private async Task<bool> ConfirmarEliminacion(string nombre)

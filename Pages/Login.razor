@@ -140,7 +140,7 @@
                                 if (!string.IsNullOrEmpty(nombreRol))
                                 {
                                     // Guardar el nombre del rol en sessionStorage
-                                    await JSRuntime.InvokeVoidAsync("sessionStorage.setItem", $"rol_{nombreRol}", nombreRol);
+                                    await JSRuntime.InvokeVoidAsync("sessionStorage.setItem", "rol", nombreRol);
 
                                     // Construir el objeto JSON para consultar las rutas asociadas a este rol
                                     var jsonConsultaRutas = new

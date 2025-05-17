@@ -5,6 +5,7 @@
 @inject ServicioEntidad servicioEntidad
 @inject NavigationManager navegacionManager
 @inject IJSRuntime JS
+@inject IJSRuntime JSRuntime 
 @inherits ValidacionAcceso
 
 <PageTitle>Lista de sentidos</PageTitle>
@@ -143,18 +144,29 @@ else
         }
     }
 
-    private void MostrarFormularioCrear()
+    private async void MostrarFormularioCrear()
     {
-        mostrarFormularioCrear = true;
-        mostrarFormularioEditar = false;
+        if(RolUsuario == "admin"){
+            mostrarFormularioCrear = true;
+            mostrarFormularioEditar = false;
+            return;
+        }
+
+        await JSRuntime.InvokeVoidAsync("alert", "No tienes acceso a crear unidades de medicion");
     }
 
-    private void MostrarFormularioEditar(Dictionary<string, object> producto)
+
+    private async void MostrarFormularioEditar(Dictionary<string, object> producto)
     {
-        claveEditando = ObtenerValor(producto, "descripcion");
-        descripcionEditado = claveEditando;
-        mostrarFormularioEditar = true;
-        mostrarFormularioCrear = false;
+        if(RolUsuario == "admin" || RolUsuario == "Validador"){
+            claveEditando = ObtenerValor(producto, "descripcion");
+            descripcionEditado = claveEditando;
+            mostrarFormularioEditar = true;
+            mostrarFormularioCrear = false;
+            return;
+            }
+
+        await JSRuntime.InvokeVoidAsync("alert", "No tienes acceso a editar unidades de medicion");
     }
 
     private async Task ActualizarUnidadMedicion()
@@ -177,20 +189,25 @@ else
 
     private async Task EliminarUnidadMedicion(Dictionary<string, object> producto)
     {
-        string claveEliminar = ObtenerValor(producto, "descripcion");
-        if (!await ConfirmarEliminacion(claveEliminar))
-        {
+        if(RolUsuario == "admin"){
+            string claveEliminar = ObtenerValor(producto, "descripcion");
+            if (!await ConfirmarEliminacion(claveEliminar))
+            {
+                return;
+            }
+            bool eliminado = await servicioEntidad.EliminarAsync(PROYECTO, TABLA, "descripcion", claveEliminar);
+            if (eliminado)
+            {
+                await CargarProductos();
+            }
+            else
+            {
+                errorMensaje = "Error al eliminar la unidad medicion.";
+            }
             return;
         }
-        bool eliminado = await servicioEntidad.EliminarAsync(PROYECTO, TABLA, "descripcion", claveEliminar);
-        if (eliminado)
-        {
-            await CargarProductos();
-        }
-        else
-        {
-            errorMensaje = "Error al eliminar la unidad medicion.";
-        }
+
+        await JSRuntime.InvokeVoidAsync("alert", "No tienes acceso a elimianar unidades de medicion");
     }
 
     private async Task<bool> ConfirmarEliminacion(string nombre)
