@@ -14,12 +14,15 @@
 <div class="mb-3">
     <button class="btn btn-primary" @onclick="MostrarFormularioCrear">Crear Nuevo</button>
 </div>
+<div class="mb-3">
+    <button class="btn btn-primary" @onclick="MostrarModalConsulta">Consultar Indicador</button>
+</div>
 
 @if (mostrarFormularioCrear)
 {
     <div class="card p-3 mb-3">
         <form>
-            <h5>Nuevo Indicardor</h5>
+            <h5>Nuevo Indicador</h5>
             <label>Codigo:</label>
             <input @bind="codigoIndicador" class="form-contFuente" placeholder="Ingrese el codigo del nuevo indicador" />
             <label>Nombre:</label>
@@ -224,6 +227,179 @@
                 <button class="btn btn-secondary mt-2" @onclick="CancelarFormulario">Cancelar</button>
              </div>
         </form>
+    </div>
+}
+
+@if (mostrarModalConsulta)
+{
+    <div class="modal fade show d-block" style="background: rgba(0, 0, 0, 0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Consultar indicador</h4>
+                    <button type="button" class="close" @onclick="CerrarModalConsulta">&times;</button>
+                </div>
+                <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                    <div class="form-group">
+                        <label>Codigo de indicador</label>
+                        <input type="text" class="form-control" @bind="CodigoindicadorConsulta">
+                    </div>
+                    <button class="btn btn-primary mt-2" @onclick="ConsultarIndicador">Buscar</button>
+
+                    @if (indicadorConsultada != null)
+                    {
+                        <hr>
+                        <div class="form-group">
+                            <label>Nombre</label>
+                            <input type="text" class="form-control" value="@nombreIndicador" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label>Objetivo</label>
+                            <input type="text" class="form-control" value="@objetivoIndicador" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label>Alcance</label>
+                            <input type="text" class="form-control" value="@alcanceIndicador" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label>Formula</label>
+                            <input type="text" class="form-control" value="@formulaIndicador" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label>Tipo Indicador</label>
+                            <input type="text" class="form-control" value="@fkidtipoindicador" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label>Unidad Medicion</label>
+                            <input type="text" class="form-control" value="@fkidunidadmedicion" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label>Meta</label>
+                            <input type="text" class="form-control" value="@metaIndicador" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label>Sentido</label>
+                            <input type="text" class="form-control" value="@fkidsentido" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label>Frecuencia</label>
+                            <input type="text" class="form-control" value="@fkidfrecuencia" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label>Articulo</label>
+                            <input type="text" class="form-control" value="@fkidarticulo" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label>Literal</label>
+                            <input type="text" class="form-control" value="@fkidliteral" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label>Numeral</label>
+                            <input type="text" class="form-control" value="@fkidnumeral" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label>Paragrafo</label>
+                            <input type="text" class="form-control" value="@fkidparagrafo" disabled>
+                        </div>
+
+                        @* Aquí va el bloque para mostrar productos *@
+                        @if (represenvisualC != null && represenvisualC.Count > 0)
+                        {
+                            <hr />
+                            <h5>Representaciones visuales en indicador</h5>
+                            <ul class="list-group">
+                                @foreach (var producto in represenvisualC)
+                                {
+                                    <li class="list-group-item">
+                                        Nombre: @ObtenerValor(producto, "nombre"),
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        @if (responsableC != null && responsableC.Count > 0)
+                        {
+                            <hr />
+                            <h5>Responsables en indicador</h5>
+                            <ul class="list-group">
+                                @foreach (var producto in responsableC)
+                                {
+                                    <li class="list-group-item">
+                                        Nombre: @ObtenerValor(producto, "nombre"),
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        @if (fuenteC != null && fuenteC.Count > 0)
+                        {
+                            <hr />
+                            <h5>Fuentes en indicador</h5>
+                            <ul class="list-group">
+                                @foreach (var producto in fuenteC)
+                                {
+                                    <li class="list-group-item">
+                                        Nombre: @ObtenerValor(producto, "nombre"),
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        @if (variableUsC != null && variableUsC.Count > 0)
+                        {
+                            <hr />
+                            <h5>Usuarios en indicador</h5>
+                            <ul class="list-group">
+                                @foreach (var producto in variableUsC)
+                                {
+                                    <li class="list-group-item">
+                                        Email: @ObtenerValor(producto, "email"),
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        @if (variableVarC != null && variableVarC.Count > 0)
+                        {
+                            <hr />
+                            <h5>Variables en indicador</h5>
+                            <ul class="list-group">
+                                @foreach (var producto in variableVarC)
+                                {
+                                    <li class="list-group-item">
+                                        Nombre: @ObtenerValor(producto, "nombre"),
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        @if (variableConsultados != null && variableConsultados.Count > 0)
+                        {
+                            <hr />
+                            <ul class="list-group">
+                                @foreach (var producto in variableConsultados)
+                                {
+                                    <li class="list-group-item">
+                                        dato: @ObtenerValor(producto, "dato"),
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        @if (resultadoConsultados != null && resultadoConsultados.Count > 0)
+                        {
+                            <hr />
+                            <h5>Resultados en indicador</h5>
+                            <ul class="list-group">
+                                @foreach (var producto in resultadoConsultados)
+                                {
+                                    <li class="list-group-item">
+                                        Resultado: @ObtenerValor(producto, "resultado"),
+                                    </li>
+                                }
+                            </ul>
+                        }
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CerrarModalConsulta">Cerrar</button>
+                </div>
+            </div>
+        </div>
     </div>
 }
 
@@ -940,33 +1116,33 @@ else
     private async Task EliminarIndicador(Dictionary<string, object> indicador)
     {
         string idEliminar = ObtenerValor(indicador, "id");
-    string nombreEliminar = ObtenerValor(indicador, "nombre");
+        string nombreEliminar = ObtenerValor(indicador, "nombre");
 
-    if (!await ConfirmarEliminacion(nombreEliminar))
-        return;
+        if (!await ConfirmarEliminacion(nombreEliminar))
+            return;
 
-    var entidadEliminada = new Dictionary<string, object>
+        var entidadEliminada = new Dictionary<string, object>
     {
         { "fkidindicadores", idEliminar }
     };
 
-    try
-    {
-        var eliminado = await servicioEntidad.EjecutarProcedimientoAsync(PROYECTO, TABLA, "eliminar_indicador_tablas", entidadEliminada);
+        try
+        {
+            var eliminado = await servicioEntidad.EjecutarProcedimientoAsync(PROYECTO, TABLA, "eliminar_indicador_tablas", entidadEliminada);
 
-        if (eliminado != null)
-        {
-            await CargarIndicadores();
+            if (eliminado != null)
+            {
+                await CargarIndicadores();
+            }
+            else
+            {
+                errorMensaje = "Error al eliminar el indicador.";
+            }
         }
-        else
+        catch (Exception ex)
         {
-            errorMensaje = "Error al eliminar el indicador.";
+            errorMensaje = $"Error inesperado: {ex.Message}";
         }
-    }
-    catch (Exception ex)
-    {
-        errorMensaje = $"Error inesperado: {ex.Message}";
-    }
     }
 
     private async Task<bool> ConfirmarEliminacion(string nombre)
@@ -1122,5 +1298,159 @@ else
             return usuario != null ? ObtenerValor(usuario, "email") : "(sin email)";
         }
         return "(sin usuario)";
+    }
+
+    private bool mostrarModalConsulta = false;
+    private string CodigoindicadorConsulta = "";
+    private void MostrarModalConsulta()
+    {
+        mostrarModalConsulta = true;
+    }
+
+    private Dictionary<string, object>? indicadorConsultada = null;
+    //Tablas intermedias
+    private List<Dictionary<string, object>> represenConsultados = new();
+    private List<Dictionary<string, object>> responsableConsultados = new();
+    private List<Dictionary<string, object>> fuenteConsultados = new();
+    private List<Dictionary<string, object>> variableConsultados = new();
+    private List<Dictionary<string, object>> resultadoConsultados = new();
+    private List<Dictionary<string, object>> represenvisualC = new();
+    private List<Dictionary<string, object>> responsableC = new();
+    private List<Dictionary<string, object>> fuenteC = new();
+    private List<Dictionary<string, object>> variableUsC = new();
+    private List<Dictionary<string, object>> variableVarC = new();
+    private List<string> idRepresen = new();
+    private List<string> idResponsable = new();
+    private List<string> idFuente = new();
+    private List<string> idVariableVar = new();
+    private List<string> idVariableUs = new();
+
+    private async Task ConsultarIndicador()
+    {
+        if (string.IsNullOrWhiteSpace(CodigoindicadorConsulta))
+            return;
+
+        var resultado = await servicioEntidad.ObtenerPorClaveAsync("Trabajo", "indicador", "codigo", CodigoindicadorConsulta);
+
+        if (resultado != null)
+        {
+            indicadorConsultada = resultado;
+            idIndicador = ObtenerValor(resultado, "id");
+            nombreIndicador = ObtenerValor(resultado, "nombre");
+            objetivoIndicador = ObtenerValor(resultado, "objetivo");
+            alcanceIndicador = ObtenerValor(resultado, "alcance");
+            formulaIndicador = ObtenerValor(resultado, "formula");
+            metaIndicador = ObtenerValor(resultado, "meta");
+            fkidtipoindicador = ObtenerValor(resultado, "fkidtipoindicador");
+            fkidunidadmedicion = ObtenerValor(resultado, "fkidunidadmedicion");
+            fkidsentido = ObtenerValor(resultado, "fkidsentido");
+            fkidfrecuencia = ObtenerValor(resultado, "fkidfrecuencia");
+            fkidarticulo = ObtenerValor(resultado, "fkidarticulo");
+            fkidliteral = ObtenerValor(resultado, "fkidliteral");
+            fkidnumeral = ObtenerValor(resultado, "fkidnumeral");
+            fkidparagrafo = ObtenerValor(resultado, "fkidparagrafo");
+
+            //consultas tablas fk
+            var tipoindicadorConsultados = await servicioEntidad.ObtenerPorClaveAsync("Trabajo", "tipoindicador", "id", fkidtipoindicador) ?? new();
+            var unidadmedicionConsultados = await servicioEntidad.ObtenerPorClaveAsync("Trabajo", "unidadmedicion", "id", fkidunidadmedicion) ?? new();
+            var sentidoConsultados = await servicioEntidad.ObtenerPorClaveAsync("Trabajo", "sentido", "id", fkidsentido) ?? new();
+            var frecuenciaConsultados = await servicioEntidad.ObtenerPorClaveAsync("Trabajo", "frecuencia", "id", fkidfrecuencia) ?? new();
+            var articuloConsultados = await servicioEntidad.ObtenerPorClaveAsync("Trabajo", "articulo", "id", fkidarticulo) ?? new();
+            var literalConsultados = await servicioEntidad.ObtenerPorClaveAsync("Trabajo", "literal", "id", fkidliteral) ?? new();
+            var numeralConsultados = await servicioEntidad.ObtenerPorClaveAsync("Trabajo", "numeral", "id",fkidnumeral) ?? new();
+            var paragrafoConsultados = await servicioEntidad.ObtenerPorClaveAsync("Trabajo", "paragrafo", "id", fkidparagrafo) ?? new();
+
+            //nuevo valor para las fk
+            fkidtipoindicador = ObtenerValor(tipoindicadorConsultados, "fkidtipoindicador");
+            fkidunidadmedicion = ObtenerValor(unidadmedicionConsultados, "fkidunidadmedicion");
+            fkidsentido = ObtenerValor(sentidoConsultados, "fkidsentido");
+            fkidfrecuencia = ObtenerValor(frecuenciaConsultados, "fkidfrecuencia");
+            fkidarticulo = ObtenerValor(articuloConsultados, "fkidarticulo");
+            fkidliteral = ObtenerValor(literalConsultados, "fkidliteral");
+            fkidnumeral = ObtenerValor(numeralConsultados, "fkidnumeral");
+            fkidparagrafo = ObtenerValor(paragrafoConsultados, "fkidparagrafo");
+
+            // Consultar tablas asociados a la indicador
+            represenConsultados = await servicioEntidad.ObtenerTodosAsync("Trabajo", $"represenvisualporindicador/fkidindicador/{idIndicador}") ?? new();
+            foreach(var id in represenConsultados)
+            {
+                idRepresen.Add(ObtenerValor(id, "fkidrepresenvisual"));
+            }
+            responsableConsultados = await servicioEntidad.ObtenerTodosAsync("Trabajo", $"responsablesporindicador/fkidindicador/{idIndicador}") ?? new();
+            foreach (var id in responsableConsultados)
+            {
+                idResponsable.Add(ObtenerValor(id, "fkidresponsable"));
+            }
+            fuenteConsultados = await servicioEntidad.ObtenerTodosAsync("Trabajo", $"fuentesporindicador/fkidindicador/{idIndicador}") ?? new();
+            foreach (var id in fuenteConsultados)
+            {
+                idFuente.Add(ObtenerValor(id, "fkidfuente"));
+            }
+            variableConsultados = await servicioEntidad.ObtenerTodosAsync("Trabajo", $"variablesporindicador/fkidindicador/{idIndicador}") ?? new();
+            foreach (var id in variableConsultados)
+            {
+                idVariableVar.Add(ObtenerValor(id, "fkidvariable"));
+                idVariableUs.Add(ObtenerValor(id, "fkemailusuario"));
+            }
+            resultadoConsultados = await servicioEntidad.ObtenerTodosAsync("Trabajo", $"resultadoindicador/fkidindicador/{idIndicador}") ?? new();
+            foreach (var id in idRepresen)
+            {
+                represenvisualC.Add(await servicioEntidad.ObtenerPorClaveAsync("Trabajo", "represenvisual", "id", id));
+            }
+            foreach (var id in idResponsable)
+            {
+                responsableC.Add(await servicioEntidad.ObtenerPorClaveAsync("Trabajo", "actor", "id", id));
+            }
+            foreach (var id in idFuente)
+            {
+                fuenteC.Add(await servicioEntidad.ObtenerPorClaveAsync("Trabajo", "fuente", "id", id));
+            }
+            foreach (var id in idVariableUs)
+            {
+                variableUsC.Add(await servicioEntidad.ObtenerPorClaveAsync("Trabajo", "usuario", "email", id));
+            }
+            foreach (var id in idVariableVar)
+            {
+                variableVarC.Add(await servicioEntidad.ObtenerPorClaveAsync("Trabajo", "variable", "id", id));
+            }
+        }
+        else
+        {
+            indicadorConsultada = null;
+            represenConsultados.Clear();
+            idRepresen.Clear();
+            responsableConsultados.Clear();
+            idResponsable.Clear();
+            fuenteConsultados.Clear();
+            idFuente.Clear();
+            variableConsultados.Clear();
+            idVariableVar.Clear();
+            idVariableUs.Clear();
+            resultadoConsultados.Clear();
+            represenvisualC.Clear();
+            responsableC.Clear();
+            fuenteC.Clear();
+            variableUsC.Clear();
+            variableVarC.Clear();
+        }
+    }
+    private void CerrarModalConsulta()
+    {
+        mostrarModalConsulta = false;
+        CodigoindicadorConsulta = "";
+        indicadorConsultada = null;
+        nombreIndicador = "";
+        objetivoIndicador = "";
+        alcanceIndicador = "";
+        formulaIndicador = "";
+        metaIndicador = "";
+        fkidtipoindicador = "";
+        fkidunidadmedicion = "";
+        fkidsentido = "";
+        fkidfrecuencia = "";
+        fkidarticulo = "";
+        fkidliteral = "";
+        fkidnumeral = "";
+        fkidparagrafo = "";
     }
 }
