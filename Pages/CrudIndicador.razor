@@ -1126,36 +1126,6 @@ else
 
     private async Task EliminarIndicador(Dictionary<string, object> indicador)
     {
-<<<<<<< HEAD
-        string idEliminar = ObtenerValor(indicador, "id");
-        string nombreEliminar = ObtenerValor(indicador, "nombre");
-
-        if (!await ConfirmarEliminacion(nombreEliminar))
-            return;
-
-        var entidadEliminada = new Dictionary<string, object>
-    {
-        { "fkidindicadores", idEliminar }
-    };
-
-        try
-        {
-            var eliminado = await servicioEntidad.EjecutarProcedimientoAsync(PROYECTO, TABLA, "eliminar_indicador_tablas", entidadEliminada);
-
-            if (eliminado != null)
-            {
-                await CargarIndicadores();
-            }
-            else
-            {
-                errorMensaje = "Error al eliminar el indicador.";
-            }
-        }
-        catch (Exception ex)
-        {
-            errorMensaje = $"Error inesperado: {ex.Message}";
-        }
-=======
         if(RolUsuario == "admin"){
             string idEliminar = ObtenerValor(indicador, "id");
             string nombreEliminar = ObtenerValor(indicador, "nombre");
@@ -1189,7 +1159,6 @@ else
         }
 
         await JSRuntime.InvokeVoidAsync("alert", "No tienes acceso a elimianar indicadores");
->>>>>>> agregarLogin
     }
 
     private async Task<bool> ConfirmarEliminacion(string nombre)
@@ -1499,5 +1468,20 @@ else
         fkidliteral = "";
         fkidnumeral = "";
         fkidparagrafo = "";
+        represenConsultados.Clear();
+        idRepresen.Clear();
+        responsableConsultados.Clear();
+        idResponsable.Clear();
+        fuenteConsultados.Clear();
+        idFuente.Clear();
+        variableConsultados.Clear();
+        idVariableVar.Clear();
+        idVariableUs.Clear();
+        resultadoConsultados.Clear();
+        represenvisualC.Clear();
+        responsableC.Clear();
+        fuenteC.Clear();
+        variableUsC.Clear();
+        variableVarC.Clear();
     }
 }
