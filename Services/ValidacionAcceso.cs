@@ -18,6 +18,8 @@ namespace ProyectoSWebfront.Services
 
         // Controlar si el acceso está permitido
         private bool accesoPermitido = false;
+        // Obtener rol
+        protected string RolUsuario { get; private set; } = string.Empty;
 
         // Sobrescribir el método que se ejecuta después del primer renderizado
         protected override async Task OnAfterRenderAsync(bool primerRenderizado)
@@ -56,6 +58,8 @@ namespace ProyectoSWebfront.Services
 
                 // Mejorable: en el futuro reemplazar sessionStorage por tokens JWT o autenticación basada en Claims
                 // Esto permitiría manejar sesiones de forma más segura y escalable
+
+                RolUsuario = await InteropJS.InvokeAsync<string>("sessionStorage.getItem", "rol") ?? string.Empty;
 
                 // Redirigir a login si no hay correo en sesión
                 if (string.IsNullOrEmpty(correoUsuario))
