@@ -1361,14 +1361,14 @@ else
             var paragrafoConsultados = await servicioEntidad.ObtenerPorClaveAsync("Trabajo", "paragrafo", "id", fkidparagrafo) ?? new();
 
             //nuevo valor para las fk
-            fkidtipoindicador = ObtenerValor(tipoindicadorConsultados, "fkidtipoindicador");
-            fkidunidadmedicion = ObtenerValor(unidadmedicionConsultados, "fkidunidadmedicion");
-            fkidsentido = ObtenerValor(sentidoConsultados, "fkidsentido");
-            fkidfrecuencia = ObtenerValor(frecuenciaConsultados, "fkidfrecuencia");
-            fkidarticulo = ObtenerValor(articuloConsultados, "fkidarticulo");
-            fkidliteral = ObtenerValor(literalConsultados, "fkidliteral");
-            fkidnumeral = ObtenerValor(numeralConsultados, "fkidnumeral");
-            fkidparagrafo = ObtenerValor(paragrafoConsultados, "fkidparagrafo");
+            fkidtipoindicador = ObtenerValor(tipoindicadorConsultados, "nombre");
+            fkidunidadmedicion = ObtenerValor(unidadmedicionConsultados, "descripcion");
+            fkidsentido = ObtenerValor(sentidoConsultados, "nombre");
+            fkidfrecuencia = ObtenerValor(frecuenciaConsultados, "nombre");
+            fkidarticulo = ObtenerValor(articuloConsultados, "nombre");
+            fkidliteral = ObtenerValor(literalConsultados, "descripcion");
+            fkidnumeral = ObtenerValor(numeralConsultados, "descripcion");
+            fkidparagrafo = ObtenerValor(paragrafoConsultados, "descripcion");
 
             // Consultar tablas asociados a la indicador
             represenConsultados = await servicioEntidad.ObtenerTodosAsync("Trabajo", $"represenvisualporindicador/fkidindicador/{idIndicador}") ?? new();
