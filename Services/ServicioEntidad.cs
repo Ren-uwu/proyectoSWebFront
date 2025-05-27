@@ -73,7 +73,7 @@ namespace ProyectoSWebfront.Services
         /// <param name="nombreProyecto">Nombre del proyecto en la API.</param>
         /// <param name="nombreTabla">Nombre de la tabla donde crear la entidad.</param>
         /// <param name="entidad">Datos de la entidad a crear.</param>
-        public async Task<bool> CrearAsync(
+        public async Task<bool> CrearAsync( 
             string nombreProyecto,
             string nombreTabla,
             Dictionary<string, object> entidad)
