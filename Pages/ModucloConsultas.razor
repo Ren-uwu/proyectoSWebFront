@@ -279,7 +279,45 @@ else if (estado=="consulta2")
 }
 else if (estado=="consulta3")
 {
-    
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Código</th>
+                <th>Objetivo</th>
+                <th>Fórmula</th>
+                <th>Meta</th>
+                <th>Actores</th>
+                <th>Tipo actores</th>
+            </tr>
+        </thead>
+        <tbody>
+            
+            @foreach (var indicador in Indicadores)
+            {
+                var actores = ObtenerNombreActorDesdeEntidad(indicador);
+                <tr>
+                    <td>@ObtenerValor(indicador, "id")</td>
+                    <td>@ObtenerValor(indicador, "codigo")</td>
+                    <td>@ObtenerValor(indicador, "objetivo")</td>
+                    <td>@ObtenerValor(indicador, "formula")</td>
+                    <td>@ObtenerValor(indicador, "meta")</td>
+                    <td>    @foreach (var i in actores)
+                        {
+                            <div>@ObtenerValor(i,"nombre")</div>
+                        }
+                    </td>  
+                    <td>    @foreach (var i in actores)
+                        {
+                            <div>@ObtenerValor(i,"tipo")</div>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
 }
 else if (estado=="consulta4")
 {
@@ -323,6 +361,7 @@ else if (estado=="consulta6")
     // Aqui van las listas de las tablas que llevan sp
 
     private List<Dictionary<string, object>> Actor = new List<Dictionary<string, object>>();
+    private List<Dictionary<string, object>> TipoActor = new List<Dictionary<string, object>>();
 
     private List<Dictionary<string, object>> RepresenVisual = new List<Dictionary<string, object>>();
 
@@ -452,6 +491,7 @@ else if (estado=="consulta6")
             Numeral = await servicioEntidad.ObtenerTodosAsync("Trabajo", "numeral") ?? new();
             Paragrafo = await servicioEntidad.ObtenerTodosAsync("Trabajo", "paragrafo") ?? new();
             Actor = await servicioEntidad.ObtenerTodosAsync("Trabajo", "actor") ?? new();
+            TipoActor = await servicioEntidad.ObtenerTodosAsync("Trabajo", "tipoactor") ?? new();
             RepresenVisual = await servicioEntidad.ObtenerTodosAsync("Trabajo", "represenvisual") ?? new();
             Fuente = await servicioEntidad.ObtenerTodosAsync("Trabajo", "fuente") ?? new();
             Variable = await servicioEntidad.ObtenerTodosAsync("Trabajo", "variable") ?? new();
@@ -565,15 +605,36 @@ else if (estado=="consulta6")
         }
         return "(sin paragrafo)";
     }
-    private string ObtenerNombreActorDesdeEntidad(Dictionary<string, object> entidad)
+    private  List<Dictionary<string, object>> ObtenerNombreActorDesdeEntidad(Dictionary<string, object> entidad)
     {
-        var fk = ObtenerValor(entidad, "fkiduniadadmedicion");
-        foreach(var t in Actor){
-            if(fk == ObtenerValor(t,"id")){
-                return  ObtenerValor(t,"nombre");
+        var fk = ObtenerValor(entidad, "id");
+        var lista = new List<Dictionary<string, object>>();
+        foreach(var i in responsablesporindicador){
+            if(fk == ObtenerValor(i,"fkidindicador")){
+                foreach(var t in Actor){
+                    if(ObtenerValor(i,"fkidresponsable") == ObtenerValor(t,"id")){
+                        var tipoActor = TipoActor.FirstOrDefault(tipo => ObtenerValor(tipo, "id") == ObtenerValor(t, "fkidtipoactor"));
+                        var nombreActor = ObtenerValor(t, "nombre").ToString();
+                        var nombreTipo = tipoActor != null ? ObtenerValor(tipoActor, "nombre").ToString() : "(sin tipo)";
+                        
+                        lista.Add(new Dictionary<string, object>
+                        {
+                            { "nombre", nombreActor },
+                            { "tipo", nombreTipo }
+                        });
+                    }
+                }
             }
         }
-        return "(sin actor)";
+        if (lista.Count == 0)
+            {
+                lista.Add(new Dictionary<string, object>
+                {
+                    { "nombre", "(sin actor)" },
+                    { "tipo", "(sin tipo)" }
+                });
+            }
+        return lista;
     }
     private List<string> ObtenerNombreRepresenDesdeEntidad(Dictionary<string, object> entidad)
     {
@@ -591,15 +652,20 @@ else if (estado=="consulta6")
         return lista.Count > 0 ? lista : new List<string> { "(sin representacion visual)" };
     }
 
-    private string ObtenerNombreFuentesDesdeEntidad(Dictionary<string, object> entidad)
+    private List<string> ObtenerNombreFuentesDesdeEntidad(Dictionary<string, object> entidad)
     {
-        var fk = ObtenerValor(entidad, "fkidfuente");
-        foreach(var t in Fuente){
-            if(fk == ObtenerValor(t,"id")){
-                return  ObtenerValor(t,"nombre");
+        var fk = ObtenerValor(entidad, "id");
+        var lista = new List<string>();
+        foreach(var i in fuentesporindicador){
+            if(fk == ObtenerValor(i,"fkidindicador")){
+                foreach(var t in Fuente){
+                    if(ObtenerValor(i,"fkidfuente") == ObtenerValor(t,"id")){
+                        lista.Add(ObtenerValor(t, "nombre").ToString());
+                    }
+                }
             }
         }
-        return "(sin fuentes)";
+        return lista.Count > 0 ? lista : new List<string> { "(sin Fuentes)" };
     }
     private string ObtenerNombreVariableDesdeEntidad(Dictionary<string, object> entidad)
     {
