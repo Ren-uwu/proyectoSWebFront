@@ -321,14 +321,141 @@ else if (estado=="consulta3")
 }
 else if (estado=="consulta4")
 {
-    
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Código</th>
+                    <th>Objetivo</th>
+                    <th>Fórmula</th>
+                    <th>Meta</th>
+                    <th>Fuentes</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var indicador in Indicadores)
+                {
+                    var fuentes = ObtenerNombreFuentesDesdeEntidad(indicador);
+                    <tr>
+                        <td>@ObtenerValor(indicador, "id")</td>
+                        <td>@ObtenerValor(indicador, "codigo")</td>
+                        <td>@ObtenerValor(indicador, "objetivo")</td>
+                        <td>@ObtenerValor(indicador, "formula")</td>
+                        <td>@ObtenerValor(indicador, "meta")</td>
+                        <td>
+                            @foreach (var i in fuentes)
+                            {
+                                <div>@i</div>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 }
 else if (estado=="consulta5")
 {
-    
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Código</th>
+                    <th>Objetivo</th>
+                    <th>Fórmula</th>
+                    <th>Meta</th>
+                    <th>Variables</th>
+                    <th>Dato</th>
+                    <th>Fecha</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var indicador in Indicadores)
+                {
+                    var variables = ObtenerNombreVariableDesdeEntidad(indicador);
+                    <tr>
+                        <td>@ObtenerValor(indicador, "id")</td>
+                        <td>@ObtenerValor(indicador, "codigo")</td>
+                        <td>@ObtenerValor(indicador, "objetivo")</td>
+                        <td>@ObtenerValor(indicador, "formula")</td>
+                        <td>@ObtenerValor(indicador, "meta")</td>
+                        <td>
+                            @foreach (var i in variables)
+                            {
+                                <div>@ObtenerValor(i, "nombre")</div>
+                            }
+                        </td>
+                        <td>
+                            @foreach (var i in variables)
+                            {
+                                <div>@ObtenerValor(i, "dato")</div>
+                            }
+                        </td>
+                        <td>
+                            @foreach (var i in variables)
+                            {
+                                <div>@ObtenerValor(i, "fecha")</div>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 }
 else if (estado=="consulta6")
 {
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Nombre</th>
+                    <th>Objetivo</th>
+                    <th>Alcance</th>
+                    <th>Fórmula</th>
+                    <th>Meta</th>
+                    <th>Id Resultado</th>
+                    <th>Resultado</th>
+                    <th>Fecha</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var indicador in Indicadores)
+                {
+                    var resultado = ObtenerNombreResultadoDesdeEntidad(indicador);
+                    <tr>
+                        <td>@ObtenerValor(indicador, "codigo")</td>
+                        <td>@ObtenerValor(indicador, "nombre")</td>
+                        <td>@ObtenerValor(indicador, "objetivo")</td>
+                        <td>@ObtenerValor(indicador, "alcance")</td>
+                        <td>@ObtenerValor(indicador, "formula")</td>
+                        <td>@ObtenerValor(indicador, "meta")</td>
+                        <td>
+                            @foreach (var i in resultado)
+                            {
+                                <div>@ObtenerValor(i, "id")</div>
+                            }
+                        </td>
+                        <td>
+                            @foreach (var i in resultado)
+                            {
+                                <div>@ObtenerValor(i, "resultado")</div>
+                            }
+                        </td>
+                        <td>
+                            @foreach (var i in resultado)
+                            {
+                                <div>@ObtenerValor(i, "fecha")</div>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
     
 }
 
@@ -616,7 +743,7 @@ else if (estado=="consulta6")
                         var tipoActor = TipoActor.FirstOrDefault(tipo => ObtenerValor(tipo, "id") == ObtenerValor(t, "fkidtipoactor"));
                         var nombreActor = ObtenerValor(t, "nombre").ToString();
                         var nombreTipo = tipoActor != null ? ObtenerValor(tipoActor, "nombre").ToString() : "(sin tipo)";
-                        
+
                         lista.Add(new Dictionary<string, object>
                         {
                             { "nombre", nombreActor },
@@ -627,13 +754,13 @@ else if (estado=="consulta6")
             }
         }
         if (lista.Count == 0)
-            {
-                lista.Add(new Dictionary<string, object>
+        {
+            lista.Add(new Dictionary<string, object>
                 {
                     { "nombre", "(sin actor)" },
                     { "tipo", "(sin tipo)" }
                 });
-            }
+        }
         return lista;
     }
     private List<string> ObtenerNombreRepresenDesdeEntidad(Dictionary<string, object> entidad)
@@ -667,15 +794,72 @@ else if (estado=="consulta6")
         }
         return lista.Count > 0 ? lista : new List<string> { "(sin Fuentes)" };
     }
-    private string ObtenerNombreVariableDesdeEntidad(Dictionary<string, object> entidad)
+    private List<Dictionary<string, object>> ObtenerNombreVariableDesdeEntidad(Dictionary<string, object> entidad)
     {
-        var fk = ObtenerValor(entidad, "fkidvariable");
-        foreach(var t in Variable){
-            if(fk == ObtenerValor(t,"id")){
-                return  ObtenerValor(t,"nombre");
+        var fk = ObtenerValor(entidad, "id");
+        var lista = new List<Dictionary<string, object>>();
+        foreach(var v in variablesporindicador)
+        {
+            if(fk == ObtenerValor(v, "fkidindicador"))
+            {
+                var dato = ObtenerValor(v, "dato");
+                var fecha = ObtenerValor(v, "fechadato");
+                var idvar = ObtenerValor(v, "fkidvariable");
+                foreach (var t in Variable)
+                {
+                    if (idvar == ObtenerValor(t, "id"))
+                    {
+                        var nombre = ObtenerValor(t, "nombre");
+                        lista.Add(new Dictionary<string, object>
+                        {
+                            {"nombre", nombre},
+                            {"dato", dato},
+                            {"fecha", fecha}                            
+                        });
+                    }
+                }
             }
         }
-        return "(sin variable)";
+        if (lista.Count == 0)
+        {
+            lista.Add(new Dictionary<string, object>
+            {
+                { "nombre", "(sin nombre)" },
+                { "dato", "(sin dato)" },
+                { "fecha", "(sin fecha)"}
+            });
+        }
+        return lista;
+    }
+    private List<Dictionary<string, object>> ObtenerNombreResultadoDesdeEntidad(Dictionary<string, object> entidad)
+    {
+        var fk = ObtenerValor(entidad, "id");
+        var lista = new List<Dictionary<string, object>>();
+        foreach (var v in resultadoporindicador)
+        {
+            if (fk == ObtenerValor(v, "fkidindicador"))
+            {
+                var id = ObtenerValor(v, "dato");
+                var resultado = ObtenerValor(v, "fechadato");
+                var fecha = ObtenerValor(v, "fkidvariable");
+                lista.Add(new Dictionary<string, object>
+            {
+                { "id", id },
+                { "resultado", resultado},
+                { "fecha", fecha}
+            });
+            }
+        }
+        if (lista.Count == 0)
+        {
+            lista.Add(new Dictionary<string, object>
+            {
+                { "id", "(sin id)" },
+                { "resultado", "(sin resultado)" },
+                { "fecha", "(sin fecha)"}
+            });
+        }
+        return lista;
     }
     private string ObtenerNombreUsuarioDesdeEntidad(Dictionary<string, object> entidad)
     {
