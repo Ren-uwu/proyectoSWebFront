@@ -839,9 +839,9 @@ else if (estado=="consulta6")
         {
             if (fk == ObtenerValor(v, "fkidindicador"))
             {
-                var id = ObtenerValor(v, "dato");
-                var resultado = ObtenerValor(v, "fechadato");
-                var fecha = ObtenerValor(v, "fkidvariable");
+                var id = ObtenerValor(v, "id");
+                var resultado = ObtenerValor(v, "fechacalculo");
+                var fecha = ObtenerValor(v, "fkidindicador");
                 lista.Add(new Dictionary<string, object>
             {
                 { "id", id },
